@@ -6,7 +6,6 @@ import logging
 from new_latex_app.application.pipeline import DocumentPipeline
 from new_latex_app.application.services import DocumentProcessingService
 from new_latex_app.infrastructure.adapters.stubs import (
-    StubDocumentStructureAnalyzer,
     StubLatexBuilder,
     StubPdfCompiler,
     StubRegionClassifier,
@@ -20,6 +19,7 @@ from new_latex_app.infrastructure.adapters.model_router import CompositeModelRou
 from new_latex_app.infrastructure.adapters.paddle_ocr import PaddleOcrTextRecognizer
 from new_latex_app.infrastructure.adapters.pix2text_math_ocr import Pix2TextMathOcrRecognizer
 from new_latex_app.infrastructure.adapters.question_segmenter import VisualQuestionSegmenter
+from new_latex_app.infrastructure.adapters.structure_analyzer import MetadataDocumentStructureAnalyzer
 from new_latex_app.infrastructure.config import AppSettings, SettingsLoader
 from new_latex_app.infrastructure.file_staging import LocalInputStager
 from new_latex_app.infrastructure.logging_config import LoggingConfigurator
@@ -65,7 +65,7 @@ class Container:
                     Pix2TextMathOcrRecognizer(),
                 )
             ),
-            structure_analyzer=StubDocumentStructureAnalyzer(),
+            structure_analyzer=MetadataDocumentStructureAnalyzer(),
             rule_engine=StubRuleEngine(),
             latex_builder=StubLatexBuilder(),
             validation_engine=StubValidationEngine(),

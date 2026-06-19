@@ -9,7 +9,6 @@ from new_latex_app.infrastructure.adapters.stubs import (
     StubLatexBuilder,
     StubPdfCompiler,
     StubRegionClassifier,
-    StubRuleEngine,
     StubValidationEngine,
 )
 from new_latex_app.infrastructure.adapters.document_loader import PyMuPdfDocumentLoader
@@ -19,6 +18,7 @@ from new_latex_app.infrastructure.adapters.model_router import CompositeModelRou
 from new_latex_app.infrastructure.adapters.paddle_ocr import PaddleOcrTextRecognizer
 from new_latex_app.infrastructure.adapters.pix2text_math_ocr import Pix2TextMathOcrRecognizer
 from new_latex_app.infrastructure.adapters.question_segmenter import VisualQuestionSegmenter
+from new_latex_app.infrastructure.adapters.rule_engine import MetadataRuleEngine
 from new_latex_app.infrastructure.adapters.structure_analyzer import MetadataDocumentStructureAnalyzer
 from new_latex_app.infrastructure.config import AppSettings, SettingsLoader
 from new_latex_app.infrastructure.file_staging import LocalInputStager
@@ -66,7 +66,7 @@ class Container:
                 )
             ),
             structure_analyzer=MetadataDocumentStructureAnalyzer(),
-            rule_engine=StubRuleEngine(),
+            rule_engine=MetadataRuleEngine(),
             latex_builder=StubLatexBuilder(),
             validation_engine=StubValidationEngine(),
             pdf_compiler=StubPdfCompiler(),

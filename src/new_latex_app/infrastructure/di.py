@@ -19,6 +19,7 @@ from new_latex_app.infrastructure.adapters.paddle_ocr import PaddleOcrTextRecogn
 from new_latex_app.infrastructure.adapters.pix2text_math_ocr import Pix2TextMathOcrRecognizer
 from new_latex_app.infrastructure.adapters.question_segmenter import VisualQuestionSegmenter
 from new_latex_app.infrastructure.adapters.rule_engine import MetadataRuleEngine
+from new_latex_app.infrastructure.adapters.chemistry_processor import MetadataChemistryProcessor
 from new_latex_app.infrastructure.adapters.structure_analyzer import MetadataDocumentStructureAnalyzer
 from new_latex_app.infrastructure.config import AppSettings, SettingsLoader
 from new_latex_app.infrastructure.file_staging import LocalInputStager
@@ -71,6 +72,10 @@ class Container:
             validation_engine=StubValidationEngine(),
             pdf_compiler=StubPdfCompiler(),
         )
+
+    def chemistry_processor(self) -> MetadataChemistryProcessor:
+        """Create a chemistry processor adapter for chemistry content normalization."""
+        return MetadataChemistryProcessor()
 
     def document_processing_service(self) -> DocumentProcessingService:
         """Create the document processing use case service."""

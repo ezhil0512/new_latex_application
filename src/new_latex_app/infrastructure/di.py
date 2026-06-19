@@ -9,7 +9,6 @@ from new_latex_app.infrastructure.adapters.stubs import (
     StubDocumentStructureAnalyzer,
     StubLatexBuilder,
     StubPdfCompiler,
-    StubQuestionSegmenter,
     StubRegionClassifier,
     StubRuleEngine,
     StubValidationEngine,
@@ -20,6 +19,7 @@ from new_latex_app.infrastructure.adapters.layout_detector import OpenCvLayoutDe
 from new_latex_app.infrastructure.adapters.model_router import CompositeModelRouter
 from new_latex_app.infrastructure.adapters.paddle_ocr import PaddleOcrTextRecognizer
 from new_latex_app.infrastructure.adapters.pix2text_math_ocr import Pix2TextMathOcrRecognizer
+from new_latex_app.infrastructure.adapters.question_segmenter import VisualQuestionSegmenter
 from new_latex_app.infrastructure.config import AppSettings, SettingsLoader
 from new_latex_app.infrastructure.file_staging import LocalInputStager
 from new_latex_app.infrastructure.logging_config import LoggingConfigurator
@@ -57,7 +57,7 @@ class Container:
             document_loader=PyMuPdfDocumentLoader(),
             image_preprocessor=OpenCvImagePreprocessor(),
             layout_detector=OpenCvLayoutDetector(),
-            question_segmenter=StubQuestionSegmenter(),
+            question_segmenter=VisualQuestionSegmenter(),
             region_classifier=StubRegionClassifier(),
             model_router=CompositeModelRouter(
                 recognizers=(

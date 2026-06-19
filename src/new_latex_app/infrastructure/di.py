@@ -1,0 +1,75 @@
+"""Dependency injection container for application assembly."""
+
+from dataclasses import dataclass
+import logging
+
+from new_latex_app.application.pipeline import DocumentPipeline
+from new_latex_app.application.services import DocumentProcessingService
+from new_latex_app.infrastructure.adapters.stubs import (
+    StubDocumentStructureAnalyzer,
+    StubLatexBuilder,
+    StubModelRouter,
+    StubPdfCompiler,
+    StubQuestionSegmenter,
+    StubRegionClassifier,
+    StubRuleEngine,
+    StubValidationEngine,
+)
+from new_latex_app.infrastructure.adapters.document_loader import PyMuPdfDocumentLoader
+from new_latex_app.infrastructure.adapters.image_preprocessor import OpenCvImagePreprocessor
+from new_latex_app.infrastructure.adapters.layout_detector import OpenCvLayoutDetector
+from new_latex_app.infrastructure.config import AppSettings, SettingsLoader
+from new_latex_app.infrastructure.file_staging import LocalInputStager
+from new_latex_app.infrastructure.logging_config import LoggingConfigurator
+from new_latex_app.infrastructure.workspace import TemporaryWorkspaceManager
+
+logger: logging.Logger = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True, slots=True)
+class Container:
+    """Small explicit dependency injection container."""
+
+    settings: AppSettings
+
+    @classmethod
+    def bootstrap(cls) -> "Container":
+        """Build a container from runtime configuration."""
+        settings = SettingsLoader().load()
+        LoggingConfigurator(settings.config_dir).configure()
+        logger.info("Dependency container bootstrapped")
+        return cls(settings=settings)
+
+    def workspace_manager(self) -> TemporaryWorkspaceManager:
+        """Create a temporary workspace manager."""
+        return TemporaryWorkspaceManager(temp_root=self.settings.temp_root)
+
+    def input_stager(self) -> LocalInputStager:
+        """Create an input stager for temporary upload handling."""
+        return LocalInputStager()
+
+    def document_pipeline(self) -> DocumentPipeline:
+        """Create the document pipeline with replaceable adapters."""
+        logger.info("Document pipeline assembly started")
+        return DocumentPipeline(
+            document_loader=PyMuPdfDocumentLoader(),
+            image_preprocessor=OpenCvImagePreprocessor(),
+            layout_detector=OpenCvLayoutDetector(),
+            question_segmenter=StubQuestionSegmenter(),
+            region_classifier=StubRegionClassifier(),
+            model_router=StubModelRouter(),
+            structure_analyzer=StubDocumentStructureAnalyzer(),
+            rule_engine=StubRuleEngine(),
+            latex_builder=StubLatexBuilder(),
+            validation_engine=StubValidationEngine(),
+            pdf_compiler=StubPdfCompiler(),
+        )
+
+    def document_processing_service(self) -> DocumentProcessingService:
+        """Create the document processing use case service."""
+        logger.info("Document processing service assembly started")
+        return DocumentProcessingService(
+            pipeline=self.document_pipeline(),
+            workspace_manager=self.workspace_manager(),
+            input_stager=self.input_stager(),
+        )

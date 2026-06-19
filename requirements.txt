@@ -1,0 +1,13 @@
+PyYAML>=6.0.1
+python-dotenv>=1.0.1
+Jinja2>=3.1.4
+pylatexenc>=2.10
+
+# Optional production model/runtime dependencies are intentionally not imported
+# by the foundation layer until concrete adapters are implemented.
+PyMuPDF>=1.24.0
+pdf2image>=1.17.0
+opencv-python-headless>=4.10.0.0
+paddleocr>=2.8.0
+pix2text>=1.1.0
+img2table>=1.2.11

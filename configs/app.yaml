@@ -1,0 +1,16 @@
+app:
+  name: new_latex_app
+  environment: development
+  temp_root: null
+  max_pages: 500
+  max_upload_mb: 200
+  retain_outputs_after_response: false
+
+security:
+  log_sensitive_content: false
+  allow_network: false
+
+compiler:
+  engine: pdflatex
+  timeout_seconds: 60
+  runs: 2

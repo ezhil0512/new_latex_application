@@ -1,0 +1,20 @@
+pipeline:
+  stages:
+    - document_loader
+    - image_preprocessing
+    - layout_detection
+    - question_segmentation
+    - region_classification
+    - model_router
+    - document_structure_analyzer
+    - rule_engine
+    - latex_builder
+    - validation_engine
+    - pdf_compiler
+
+models:
+  layout_detector: doclayout_yolo
+  text_ocr: paddleocr
+  formula_ocr: pix2text
+  table_recognition: img2table
+  table_fallback: table_transformer

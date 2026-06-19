@@ -1,0 +1,27 @@
+FROM python:3.10.14-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    HF_HUB_OFFLINE=1 \
+    TRANSFORMERS_OFFLINE=1
+
+WORKDIR /app
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        libglib2.0-0 \
+        libgl1 \
+        poppler-utils \
+        texlive-latex-base \
+        texlive-latex-extra \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.validation-order.txt requirements.validation-order.txt
+COPY tools/validate_environment.py tools/validate_environment.py
+
+RUN python -m pip install --upgrade pip==24.3.1 setuptools==75.6.0 wheel==0.45.1 \
+    && python -m pip install --no-cache-dir -r requirements.validation-order.txt \
+    && python -m pip check
+
+CMD ["python", "tools/validate_environment.py", "--report", "reports/environment_validation_report.md", "--json-report", "reports/environment_validation_report.json"]

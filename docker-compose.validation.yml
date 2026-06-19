@@ -1,0 +1,21 @@
+services:
+  dependency-validation:
+    build:
+      context: .
+      dockerfile: Dockerfile.validation
+    image: new-latex-app-dependency-validation:latest
+    environment:
+      HF_HUB_OFFLINE: "1"
+      TRANSFORMERS_OFFLINE: "1"
+      PADDLE_PDX_MODEL_SOURCE: "local"
+      DOCLAYOUT_YOLO_WEIGHTS: /models/doclayout/doclayout_yolo.pt
+      TATR_MODEL_DIR: /models/table-transformer
+      PIX2TEXT_MODEL_DIR: /models/pix2text
+      PADDLEOCR_DOC_ORIENTATION_MODEL_DIR: /models/paddleocr/PP-LCNet_x1_0_doc_ori
+      PADDLEOCR_DOC_UNWARPING_MODEL_DIR: /models/paddleocr/UVDoc
+      PADDLEOCR_TEXTLINE_ORIENTATION_MODEL_DIR: /models/paddleocr/PP-LCNet_x1_0_textline_ori
+      PADDLEOCR_TEXT_DETECTION_MODEL_DIR: /models/paddleocr/PP-OCRv5_server_det
+      PADDLEOCR_TEXT_RECOGNITION_MODEL_DIR: /models/paddleocr/en_PP-OCRv5_mobile_rec
+    volumes:
+      - ./reports:/app/reports
+      - ./models:/models:ro

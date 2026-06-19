@@ -1,0 +1,12 @@
+services:
+  new-latex-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: new-latex-app:latest
+    environment:
+      NEW_LATEX_APP_ENV: production
+      NEW_LATEX_APP_CONFIG_DIR: /app/configs
+    volumes:
+      - ./configs:/app/configs:ro
+    command: ["new-latex-app", "--help"]

@@ -23,3 +23,4 @@ class ProcessDocumentResponse:
     session_id: UUID
     tex_path: Path
     pdf_path: Path
+    export_path: Path

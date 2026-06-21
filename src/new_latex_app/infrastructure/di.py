@@ -21,6 +21,7 @@ from new_latex_app.infrastructure.adapters.pix2text_math_ocr import Pix2TextMath
 from new_latex_app.infrastructure.adapters.question_segmenter import VisualQuestionSegmenter
 from new_latex_app.infrastructure.adapters.rule_engine import MetadataRuleEngine
 from new_latex_app.infrastructure.adapters.chemistry_processor import MetadataChemistryProcessor
+from new_latex_app.infrastructure.adapters.export_manager import TemporaryExportManager
 from new_latex_app.infrastructure.adapters.latex_builder import DefaultLatexBuilder
 from new_latex_app.infrastructure.adapters.structure_analyzer import MetadataDocumentStructureAnalyzer
 from new_latex_app.infrastructure.config import AppSettings, SettingsLoader
@@ -79,6 +80,10 @@ class Container:
     def chemistry_processor(self) -> MetadataChemistryProcessor:
         """Create a chemistry processor adapter for chemistry content normalization."""
         return MetadataChemistryProcessor()
+
+    def export_manager(self) -> TemporaryExportManager:
+        """Create an export manager adapter for packaging LaTeX and assets."""
+        return TemporaryExportManager()
 
     def document_processing_service(self) -> DocumentProcessingService:
         """Create the document processing use case service."""

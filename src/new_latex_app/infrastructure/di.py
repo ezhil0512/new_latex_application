@@ -14,6 +14,7 @@ from new_latex_app.infrastructure.adapters.stubs import (
 from new_latex_app.infrastructure.adapters.document_loader import PyMuPdfDocumentLoader
 from new_latex_app.infrastructure.adapters.image_preprocessor import OpenCvImagePreprocessor
 from new_latex_app.infrastructure.adapters.layout_detector import OpenCvLayoutDetector
+from new_latex_app.infrastructure.adapters.diagram_processor import DiagramAssetProcessor
 from new_latex_app.infrastructure.adapters.model_router import CompositeModelRouter
 from new_latex_app.infrastructure.adapters.paddle_ocr import PaddleOcrTextRecognizer
 from new_latex_app.infrastructure.adapters.pix2text_math_ocr import Pix2TextMathOcrRecognizer
@@ -62,6 +63,7 @@ class Container:
             region_classifier=StubRegionClassifier(),
             model_router=CompositeModelRouter(
                 recognizers=(
+                    DiagramAssetProcessor(),
                     PaddleOcrTextRecognizer(),
                     Pix2TextMathOcrRecognizer(),
                 )

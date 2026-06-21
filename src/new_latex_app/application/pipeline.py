@@ -12,6 +12,8 @@ from new_latex_app.domain.enums import PipelineStageName
 from new_latex_app.domain.ports.document_loader import DocumentLoader
 from new_latex_app.domain.ports.latex_builder import LatexBuilder
 from new_latex_app.domain.ports.layout_detection import LayoutDetector
+from new_latex_app.domain.ports.chemistry_processor import ChemistryProcessor
+from new_latex_app.domain.ports.export_manager import ExportManager
 from new_latex_app.domain.ports.model_router import ModelRouter
 from new_latex_app.domain.ports.pdf_compiler import PdfCompiler
 from new_latex_app.domain.ports.preprocessing import ImagePreprocessor
@@ -38,8 +40,10 @@ class DocumentPipeline:
     model_router: ModelRouter
     structure_analyzer: DocumentStructureAnalyzer
     rule_engine: RuleEngine
+    chemistry_processor: ChemistryProcessor
     latex_builder: LatexBuilder
     validation_engine: ValidationEngine
+    export_manager: ExportManager
     pdf_compiler: PdfCompiler
 
     def run(self, document: InputDocument, workspace_path: Path, session_id: UUID) -> ProcessingResult:
@@ -55,8 +59,20 @@ class DocumentPipeline:
             contents = self._timed(PipelineStageName.MODEL_ROUTER, self.model_router.recognize, pages, regions, workspace_path)
             structure = self._timed(PipelineStageName.DOCUMENT_STRUCTURE_ANALYZER, self.structure_analyzer.analyze, pages, contents)
             structure = self._timed(PipelineStageName.RULE_ENGINE, self.rule_engine.apply, structure)
+            structure = self._timed(PipelineStageName.CHEMISTRY_PROCESSOR, self.chemistry_processor.process, structure)
             latex_document = self._timed(PipelineStageName.LATEX_BUILDER, self.latex_builder.build, structure, workspace_path)
             latex_document = self._timed(PipelineStageName.VALIDATION_ENGINE, self.validation_engine.validate, latex_document)
+            export_root = self._timed(
+                PipelineStageName.EXPORT_MANAGER,
+                self.export_manager.export,
+                latex_document,
+                tuple(
+                    content.metadata
+                    for content in structure.contents
+                    if content.metadata.get("asset_filename") and content.metadata.get("asset_relpath")
+                ),
+                workspace_path,
+            )
             compiled_pdf = self._timed(PipelineStageName.PDF_COMPILER, self.pdf_compiler.compile, latex_document, workspace_path)
             if latex_document.output_path is None:
                 msg = "LaTeX builder did not provide an output path"
@@ -65,6 +81,7 @@ class DocumentPipeline:
             return ProcessingResult(
                 tex_path=latex_document.output_path,
                 pdf_path=compiled_pdf.path,
+                export_path=export_root,
                 session_id=session_id,
             )
         except Exception:

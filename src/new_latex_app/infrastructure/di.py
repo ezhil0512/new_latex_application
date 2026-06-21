@@ -72,8 +72,10 @@ class Container:
             ),
             structure_analyzer=MetadataDocumentStructureAnalyzer(),
             rule_engine=MetadataRuleEngine(),
+            chemistry_processor=self.chemistry_processor(),
             latex_builder=DefaultLatexBuilder(),
             validation_engine=StubValidationEngine(),
+            export_manager=self.export_manager(),
             pdf_compiler=StubPdfCompiler(),
         )
 

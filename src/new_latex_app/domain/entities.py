@@ -104,4 +104,5 @@ class ProcessingResult:
 
     tex_path: Path
     pdf_path: Path
+    export_path: Path
     session_id: UUID

@@ -48,4 +48,6 @@ class PipelineStageName(str, Enum):
     RULE_ENGINE = "rule_engine"
     LATEX_BUILDER = "latex_builder"
     VALIDATION_ENGINE = "validation_engine"
+    CHEMISTRY_PROCESSOR = "chemistry_processor"
+    EXPORT_MANAGER = "export_manager"
     PDF_COMPILER = "pdf_compiler"

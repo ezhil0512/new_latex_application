@@ -100,7 +100,8 @@ def test_apply_rejects_empty_document() -> None:
 
 def test_apply_rejects_invalid_question_structure() -> None:
     question = {"question_id": "", "page_number": 1, "question_index": 1, "content_indices": (), "region_indices": ()}
-    structure = _structure((), (), (question,))
+    content = _content(_region(1))
+    structure = _structure((content,), (content.region,), (question,))
 
     with pytest.raises(PipelineStageError, match="missing a valid identifier"):
         MetadataRuleEngine().apply(structure)

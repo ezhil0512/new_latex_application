@@ -40,7 +40,7 @@ def _structure(contents: tuple[RecognizedContent, ...], questions: tuple[dict[st
 def test_build_text_only_document() -> None:
     region = _region(RegionType.TEXT)
     content = _content(region, text="This is a text-only question.")
-    question = {"question_id": "q1", "page_number": 1, "question_index": 1, "content_indices": (0,), "region_indices": (0,), "blocks": (({"block_type": "paragraph", "content_indices": (0,), "region_indices": (0,)},),)}
+    question = {"question_id": "q1", "page_number": 1, "question_index": 1, "content_indices": (0,), "region_indices": (0,), "blocks": ({"block_type": "paragraph", "content_indices": (0,), "region_indices": (0,)},)}
     structure = _structure((content,), (question,))
 
     result = DefaultLatexBuilder().build(structure, Path("/tmp"))
@@ -53,7 +53,7 @@ def test_build_text_only_document() -> None:
 def test_build_document_with_formula() -> None:
     region = _region(RegionType.FORMULA)
     content = _content(region, latex="x^2 + y^2 = z^2")
-    question = {"question_id": "q1", "page_number": 1, "question_index": 1, "content_indices": (0,), "region_indices": (0,), "blocks": (({"block_type": "formula", "content_indices": (0,), "region_indices": (0,)},),)}
+    question = {"question_id": "q1", "page_number": 1, "question_index": 1, "content_indices": (0,), "region_indices": (0,), "blocks": ({"block_type": "formula", "content_indices": (0,), "region_indices": (0,)},)}
     structure = _structure((content,), (question,))
 
     result = DefaultLatexBuilder().build(structure, Path("/tmp"))
@@ -66,7 +66,7 @@ def test_build_document_with_formula() -> None:
 def test_build_document_with_diagram() -> None:
     region = _region(RegionType.FIGURE)
     content = _content(region, text="Figure caption.", asset_filename="diagram_123.png")
-    question = {"question_id": "q1", "page_number": 1, "question_index": 1, "content_indices": (0,), "region_indices": (0,), "blocks": (({"block_type": "figure", "content_indices": (0,), "region_indices": (0,)},),)}
+    question = {"question_id": "q1", "page_number": 1, "question_index": 1, "content_indices": (0,), "region_indices": (0,), "blocks": ({"block_type": "figure", "content_indices": (0,), "region_indices": (0,)},)}
     structure = _structure((content,), (question,))
 
     result = DefaultLatexBuilder().build(structure, Path("/tmp"))
@@ -80,7 +80,7 @@ def test_build_document_with_chemistry() -> None:
     region = _region(RegionType.TEXT)
     content = _content(region, text="H2O -> H+ + OH-")
     content = RecognizedContent(region=content.region, text=content.text, latex=None, asset_path=None, metadata={**content.metadata, "chemistry": {"normalized_text": "H_2O \\rightarrow H^+ + OH^-"}})
-    question = {"question_id": "q1", "page_number": 1, "question_index": 1, "content_indices": (0,), "region_indices": (0,), "blocks": (({"block_type": "paragraph", "content_indices": (0,), "region_indices": (0,)},),)}
+    question = {"question_id": "q1", "page_number": 1, "question_index": 1, "content_indices": (0,), "region_indices": (0,), "blocks": ({"block_type": "paragraph", "content_indices": (0,), "region_indices": (0,)},)}
     structure = _structure((content,), (question,))
 
     result = DefaultLatexBuilder().build(structure, Path("/tmp"))

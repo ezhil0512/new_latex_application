@@ -60,11 +60,11 @@ class TemporaryExportManager:
         asset_metadata: tuple[dict[str, str], ...],
         workspace_path: Path,
     ) -> None:
-        if not asset_metadata:
-            return
-
         assets_dir = export_root / "assets"
         assets_dir.mkdir(parents=True, exist_ok=True)
+
+        if not asset_metadata:
+            return
 
         for metadata in asset_metadata:
             asset_filename = metadata.get("asset_filename")

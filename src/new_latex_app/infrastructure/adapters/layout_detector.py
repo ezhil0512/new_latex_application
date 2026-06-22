@@ -1,7 +1,6 @@
 """Concrete offline visual layout detector."""
 
 from dataclasses import dataclass
-from pathlib import Path
 import logging
 import time
 
@@ -139,7 +138,7 @@ class OpenCvLayoutDetector:
 
     def _overlaps(self, first: _CandidateRegion, second: _CandidateRegion) -> bool:
         """Return true when two candidates overlap or nearly touch."""
-        padding = 8
+        padding = 24
         return not (
             first.x + first.width + padding < second.x
             or second.x + second.width + padding < first.x
@@ -200,7 +199,7 @@ class OpenCvLayoutDetector:
             "component_count": float(contour_count),
         }
 
-        if horizontal_lines >= 3 and vertical_lines >= 2 and grid_intersections >= 4:
+        if horizontal_lines >= 3 and vertical_lines >= 2 and grid_intersections >= 6:
             return RegionType.TABLE, 0.86, features
         if (
             1 <= horizontal_lines <= 2
@@ -260,10 +259,8 @@ class OpenCvLayoutDetector:
         vertical_lines: int,
     ) -> bool:
         """Detect non-table graphic or diagram-like regions."""
-        if horizontal_lines >= 3 and vertical_lines >= 2:
-            return False
         large_region = candidate.width >= 40 and candidate.height >= 40
-        sparse_or_solid_shape = contour_count <= 6 and foreground_ratio >= 0.01
+        sparse_or_solid_shape = contour_count <= 5 and foreground_ratio >= 0.01
         return large_region and sparse_or_solid_shape
 
     def _with_reading_order(self, region: DocumentRegion, reading_order: int) -> DocumentRegion:

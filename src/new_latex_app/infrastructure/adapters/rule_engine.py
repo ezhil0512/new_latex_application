@@ -195,10 +195,7 @@ class MetadataRuleEngine:
                     blocks.append(active_block)
                 continue
 
-            if block_type == "formula" and active_block and active_block["block_type"] == "paragraph":
-                active_block["content_indices"] += (content_index,)
-                active_block["region_indices"] += (region_index,)
-                continue
+
 
             if block_type == "option_group":
                 if active_block and active_block["block_type"] == "option_group":

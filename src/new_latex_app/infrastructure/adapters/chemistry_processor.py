@@ -3,12 +3,9 @@
 import logging
 import re
 import time
-from typing import Any
 
 from new_latex_app.domain.entities import DocumentStructure, RecognizedContent
-from new_latex_app.domain.enums import RegionType
 from new_latex_app.domain.exceptions import PipelineStageError
-from new_latex_app.domain.ports.chemistry_processor import ChemistryProcessor
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -17,23 +14,23 @@ class MetadataChemistryProcessor:
     """Normalize chemistry-specific text and annotate chemistry metadata."""
 
     _CHEMISTRY_PATTERN = re.compile(
-        r"\b(?:[A-Z][a-z]?\d|[A-Z][a-z]?\(|\d+[+-]|\([aqs lg]+\)|->|=>|⇌|<=>|<->|→|←|↔)"
+        r"\b[A-Z][a-z]?\d|\b[A-Z][a-z]?\(|\b\d+[+-]|\b[A-Z][a-z]?[+-]|\([aqs lg]+\)|->|=>|⇌|<=>|<->|→|←|↔"
     )
     _ARROW_PATTERN = re.compile(r"<=>|<->|->|=>|→|←|⇌|↔")
     _STATE_PATTERN = re.compile(r"\((aq|s|l|g)\)", re.IGNORECASE)
-    _IONIC_CHARGE_PATTERN = re.compile(r"(?<![\^_])\b([A-Za-z][A-Za-z0-9()]*?)(\d*[+-])\b")
+    _IONIC_CHARGE_PATTERN = re.compile(r"(?<![\^_])\b([A-Za-z][A-Za-z0-9()]*?)(\d*[+-])(?!\w)")
     _SUBSCRIPT_PATTERN = re.compile(r"(?<![\\_^])([A-Za-z)])(\d+)")
     _SUPERSCRIPT_PATTERN = re.compile(r"\^(\d*[+-]|[+-])")
 
     _ARROW_REPLACEMENTS = {
-        "<=>": r"\\rightleftharpoons",
-        "<->": r"\\rightleftharpoons",
-        "->": r"\\rightarrow",
-        "=>": r"\\rightarrow",
-        "→": r"\\rightarrow",
-        "←": r"\\leftarrow",
-        "⇌": r"\\rightleftharpoons",
-        "↔": r"\\rightleftharpoons",
+        "<=>": r"\rightleftharpoons",
+        "<->": r"\rightleftharpoons",
+        "->": r"\rightarrow",
+        "=>": r"\rightarrow",
+        "→": r"\rightarrow",
+        "←": r"\leftarrow",
+        "⇌": r"\rightleftharpoons",
+        "↔": r"\rightleftharpoons",
     }
 
     def process(self, structure: DocumentStructure) -> DocumentStructure:

@@ -6,7 +6,6 @@ import logging
 from new_latex_app.application.pipeline import DocumentPipeline
 from new_latex_app.application.services import DocumentProcessingService
 from new_latex_app.infrastructure.adapters.stubs import (
-    StubLatexBuilder,
     StubPdfCompiler,
     StubRegionClassifier,
     StubValidationEngine,

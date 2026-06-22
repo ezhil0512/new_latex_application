@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Completely offline Image and PDF to LaTeX document converter. Clean presentation layout, no cloud dependencies.">
+    <title>Offline Image/PDF to LaTeX Generator</title>
+    <!-- CSS stylesheet linked using Flask static url helper -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <!-- Main Application Header -->
+    <header class="app-header">
+        <div class="header-container">
+            <h1 id="app-title">Offline Image &amp; PDF to LaTeX</h1>
+            <div class="status-indicators">
+                <span id="connection-status-badge" class="badge badge-success">Offline Mode</span>
+                <span id="pipeline-status-badge" class="badge badge-idle">System Idle</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="app-workspace">
+        <!-- Left Panel: Document Loading & Previews -->
+        <section class="panel panel-left" aria-labelledby="input-section-title">
+            <h2 id="input-section-title" class="sr-only">Input Document Workspace</h2>
+            
+            <!-- Upload Area -->
+            <div id="drop-zone" class="upload-box" role="region" aria-label="File Upload Dropzone">
+                <input type="file" id="file-input" class="file-input" accept=".pdf, .png, .jpg, .jpeg" aria-describedby="upload-instructions" />
+                <label for="file-input" class="upload-label">
+                    <span class="upload-icon">📄</span>
+                    <span id="upload-instructions" class="upload-text">
+                        Drag and drop a PDF or image here, or <strong class="browse-link">browse files</strong>
+                    </span>
+                    <span class="upload-limits">Supported formats: PDF, PNG, JPG, JPEG (Max 50MB)</span>
+                </label>
+            </div>
+
+            <!-- Inline Error Message Area -->
+            <div id="error-message-area" class="error-message-area hidden" role="alert" aria-live="polite">
+                <span class="error-message-icon" aria-hidden="true">⚠️</span>
+                <span class="error-message-text"></span>
+                <button id="error-dismiss-btn" class="error-dismiss-btn" aria-label="Dismiss error" type="button">✕</button>
+            </div>
+
+            <!-- Uploaded Document Preview Pane -->
+            <div id="doc-preview-card" class="card hidden">
+                <div class="card-header">
+                    <h3 class="card-title">Document Preview</h3>
+                    <div id="zoom-toolbar" class="zoom-toolbar hidden">
+                        <button id="zoom-out-btn" class="btn btn-secondary btn-sm" title="Zoom Out" aria-label="Zoom Out">−</button>
+                        <button id="zoom-in-btn" class="btn btn-secondary btn-sm" title="Zoom In" aria-label="Zoom In">＋</button>
+                        <button id="zoom-reset-btn" class="btn btn-secondary btn-sm" title="Reset Zoom">Reset</button>
+                        <button id="zoom-fit-btn" class="btn btn-secondary btn-sm" title="Fit to Screen">Fit</button>
+                    </div>
+                    <button id="clear-file-btn" class="btn btn-secondary btn-sm" aria-label="Clear uploaded document">Clear File</button>
+                </div>
+                <div class="card-body preview-container">
+                    <div id="file-details" class="file-details">
+                        <span id="preview-filename" class="filename">document_name.pdf</span>
+                        <span id="preview-filesize" class="filesize">0 KB</span>
+                    </div>
+                    <!-- Real preview placeholder -->
+                    <div id="document-view-port" class="view-port">
+                        <!-- PDF or Image object will render dynamically here -->
+                        <span class="placeholder-text">Preview loading...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Diagram Preview Card -->
+            <div id="diagram-preview-card" class="card hidden">
+                <div class="card-header">
+                    <h3 class="card-title">Extracted Diagrams</h3>
+                </div>
+                <div class="card-body scrollable">
+                    <div id="assets-list" class="assets-grid">
+                        <span class="placeholder-text">No diagrams detected.</span>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Processing Card -->
+            <div id="processing-card" class="card hidden" role="region" aria-label="Document Processing Status">
+                <div class="card-header">
+                    <h3 class="card-title">Processing Pipeline</h3>
+                    <div class="card-actions">
+                        <span id="processing-timer" class="processing-timer" aria-label="Time elapsed">00:00</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="processing-status-info">
+                        <span class="processing-spinner-large" aria-hidden="true"></span>
+                        <span id="processing-status-text" class="processing-status-text">Uploading document…</span>
+                    </div>
+                    <div class="processing-progress-section">
+                        <div class="progress-track">
+                            <div class="progress-bar indeterminate"></div>
+                        </div>
+                    </div>
+                    <div class="processing-actions">
+                        <button id="cancel-processing-btn" class="btn btn-secondary btn-block" type="button">Cancel Processing</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload Status Area -->
+            <div id="upload-status" class="upload-status hidden" aria-live="polite">
+                <span class="upload-status-text">Preparing…</span>
+                <div class="progress-track">
+                    <div class="progress-bar indeterminate"></div>
+                </div>
+            </div>
+
+            <!-- Action Panel -->
+            <div id="action-panel" class="action-panel card hidden">
+                <button id="generate-latex-btn" class="btn btn-primary btn-block">
+                    <span class="btn-text">Generate LaTeX Code</span>
+                    <span id="processing-spinner" class="spinner hidden" aria-hidden="true"></span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Right Panel: LaTeX Code Editor & Rendered Output -->
+        <section class="panel panel-right" aria-labelledby="output-section-title">
+            <h2 id="output-section-title" class="sr-only">LaTeX Output &amp; Previews</h2>
+
+            <!-- LaTeX Code Area -->
+            <div id="latex-editor-card" class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Generated LaTeX Code</h3>
+                    <div class="card-actions">
+                        <button id="select-all-btn" class="btn btn-secondary btn-sm" disabled>Select All</button>
+                        <button id="word-wrap-toggle" class="btn btn-secondary btn-sm" disabled>Word Wrap</button>
+                        <button id="copy-latex-btn" class="btn btn-secondary btn-sm" disabled>Copy LaTeX</button>
+                        <a id="download-tex-btn" class="btn btn-secondary btn-sm disabled" role="button" aria-disabled="true">Download .TEX</a>
+                        <a id="download-zip-btn" class="btn btn-primary btn-sm disabled" role="button" aria-disabled="true">Download Export (.ZIP)</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="latex-viewer-container" class="latex-viewer-container">
+                        <div class="latex-placeholder">Your generated LaTeX code will appear here...</div>
+                    </div>
+                    <!-- Hidden textarea for backward compatibility -->
+                    <textarea id="latex-code-output" class="hidden" readonly aria-label="Generated LaTeX code"></textarea>
+                </div>
+            </div>
+
+            <!-- Hidden element to prevent JS null reference errors -->
+            <div id="structure-preview" class="hidden"></div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <p>&copy; 2026 Image/PDF to LaTeX Generator. Completely Offline and Private.</p>
+    </footer>
+
+    <!-- Diagram Lightbox Overlay -->
+    <div id="diagram-lightbox" class="diagram-lightbox" role="dialog" aria-hidden="true" aria-label="Diagram Lightbox">
+        <button id="lightbox-close-btn" class="lightbox-close-btn" aria-label="Close Lightbox">✕</button>
+        <img id="lightbox-img" class="lightbox-img" src="" alt="Enlarged Diagram" />
+    </div>
+
+    <!-- JavaScript modular entrypoint linked using Flask static url helper -->
+    <script type="module" src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

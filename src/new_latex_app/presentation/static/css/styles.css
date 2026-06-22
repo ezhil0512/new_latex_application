@@ -1,0 +1,866 @@
+/* ----------------------------------------------------
+   OFFLINE LATEX GENERATOR - SYSTEM CSS CORE
+   ---------------------------------------------------- */
+
+/* --- Custom Variables & Theme Tokens --- */
+:root {
+    /* Color Palette - HSL Tailored (Premium Slate & Deep Violet Accent) */
+    --bg-primary: #0f172a;       /* Slate 900 */
+    --bg-secondary: #1e293b;     /* Slate 800 */
+    --bg-tertiary: #334155;      /* Slate 700 */
+    
+    --text-primary: #f8fafc;     /* Slate 50 */
+    --text-secondary: #94a3b8;   /* Slate 400 */
+    --text-muted: #64748b;       /* Slate 500 */
+
+    --accent: #6366f1;           /* Indigo 500 */
+    --accent-hover: #4f46e5;     /* Indigo 600 */
+    --accent-light: rgba(99, 102, 241, 0.1);
+
+    --success: #10b981;          /* Emerald 500 */
+    --warning: #f59e0b;          /* Amber 500 */
+    --danger: #ef4444;           /* Red 500 */
+
+    --border-color: #334155;     /* Slate 700 */
+    --border-focus: #818cf8;     /* Indigo 400 */
+
+    /* Typography */
+    --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+    /* Spacing & Borders */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    
+    --transition-base: all 0.2s ease-in-out;
+}
+
+/* --- Base Resets & Document Setup --- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* --- App Header & Navigation --- */
+.app-header {
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    padding: var(--spacing-md) var(--spacing-lg);
+}
+
+.header-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+}
+
+#app-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    background: linear-gradient(to right, var(--text-primary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.status-indicators {
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: center;
+}
+
+.badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 9999px;
+    text-transform: uppercase;
+}
+
+.badge-success {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: var(--success);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-idle {
+    background-color: rgba(148, 163, 184, 0.15);
+    color: var(--text-secondary);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.badge-busy {
+    background-color: rgba(245, 158, 11, 0.15);
+    color: var(--warning);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* --- Layout Grid (App Workspace) --- */
+.app-workspace {
+    flex: 1;
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+    padding: var(--spacing-lg);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-lg);
+}
+
+@media (max-width: 1024px) {
+    .app-workspace {
+        grid-template-columns: 1fr;
+    }
+}
+
+.panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+/* --- UI Cards & Layout Containers --- */
+.card {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.card-header {
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.card-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.card-body {
+    padding: var(--spacing-md);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-body.scrollable {
+    max-height: 450px;
+    overflow-y: auto;
+}
+
+/* --- Upload Dropzone UI --- */
+.upload-box {
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius-lg);
+    background-color: var(--bg-secondary);
+    padding: var(--spacing-lg);
+    text-align: center;
+    transition: var(--transition-base);
+    position: relative;
+    cursor: pointer;
+}
+
+.upload-box:hover, .upload-box.drag-over {
+    border-color: var(--accent);
+    background-color: var(--accent-light);
+}
+
+.file-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.upload-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-sm);
+    pointer-events: none;
+}
+
+.upload-icon {
+    font-size: 2.5rem;
+}
+
+.upload-text {
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.browse-link {
+    color: var(--accent);
+}
+
+.upload-limits {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* --- Previews & Viewports --- */
+.preview-container {
+    gap: var(--spacing-md);
+}
+
+.file-details {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: var(--bg-primary);
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+    border: 1px solid var(--border-color);
+}
+
+.filename {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.filesize {
+    color: var(--text-secondary);
+}
+
+.view-port {
+    min-height: 250px;
+    background-color: var(--bg-primary);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.placeholder-text {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* --- Action Controls --- */
+.action-panel {
+    padding: var(--spacing-md);
+}
+
+/* --- Buttons & Triggers --- */
+.btn {
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    transition: var(--transition-base);
+}
+
+.btn-primary {
+    background-color: var(--accent);
+    color: var(--text-primary);
+}
+
+.btn-primary:hover:not(:disabled) {
+    background-color: var(--accent-hover);
+}
+
+.btn-secondary {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background-color: var(--bg-secondary);
+}
+
+.btn-block {
+    display: flex;
+    width: 100%;
+    padding: 12px;
+}
+
+.btn-sm {
+    padding: 4px 10px;
+    font-size: 0.75rem;
+}
+
+.btn:disabled, .btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* --- Code Editor Textarea --- */
+.code-editor {
+    width: 100%;
+    min-height: 250px;
+    flex: 1;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    resize: vertical;
+    outline: none;
+}
+
+.code-editor:focus {
+    border-color: var(--border-focus);
+}
+
+/* --- Structure and Asset Previews --- */
+.preview-layout {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.assets-section, .compiled-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.assets-section h4, .compiled-section h4 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+}
+
+.assets-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: var(--spacing-sm);
+    min-height: 60px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-sm);
+    background-color: var(--bg-primary);
+}
+
+.asset-card {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.asset-img {
+    max-width: 100%;
+    height: 80px;
+    object-fit: contain;
+    border-radius: 2px;
+    background-color: #fff; /* White canvas background to render black formulas/diagrams */
+}
+
+.asset-name {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    word-break: break-all;
+    text-align: center;
+}
+
+.structure-preview-box {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    min-height: 80px;
+}
+
+.structure-item {
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.structure-item:last-child {
+    border-bottom: none;
+}
+
+/* --- Spinners & Loaders --- */
+.spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: var(--text-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: inline-block;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* --- Footer --- */
+.app-footer {
+    background-color: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    padding: var(--spacing-md);
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: auto;
+}
+
+/* ====================================================================
+   PHASE 2 – Upload Interface Styles
+   ==================================================================== */
+
+/* --- Inline Error Message Area --- */
+.error-message-area {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: 10px var(--spacing-md);
+    background-color: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    border-radius: var(--radius-md);
+    color: var(--danger);
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.error-message-icon {
+    flex-shrink: 0;
+    font-size: 1.1rem;
+}
+
+.error-message-text {
+    flex: 1;
+    font-weight: 500;
+}
+
+.error-dismiss-btn {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    color: var(--danger);
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 2px 4px;
+    border-radius: var(--radius-sm);
+    opacity: 0.7;
+    transition: opacity 0.15s ease;
+}
+
+.error-dismiss-btn:hover {
+    opacity: 1;
+}
+
+/* --- Drop Zone Error State --- */
+.upload-box.error-state {
+    border-color: var(--danger);
+    background-color: rgba(239, 68, 68, 0.05);
+}
+
+/* --- Upload Status Bar --- */
+.upload-status {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.upload-status-text {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.progress-track {
+    width: 100%;
+    height: 4px;
+    background-color: var(--bg-tertiary);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background-color: var(--accent);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+.progress-bar.indeterminate {
+    width: 40%;
+    animation: indeterminate-progress 1.4s ease-in-out infinite;
+}
+
+@keyframes indeterminate-progress {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(350%); }
+}
+
+/* --- PDF Preview Metadata Card --- */
+.pdf-preview-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    width: 100%;
+}
+
+.pdf-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.pdf-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.pdf-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pdf-size {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* --- File Type Badge --- */
+.file-type-badge {
+    flex-shrink: 0;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 3px 8px;
+    border-radius: 9999px;
+    background-color: rgba(99, 102, 241, 0.15);
+    color: var(--accent);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+/* --- PDF Iframe Preview --- */
+.pdf-iframe {
+    width: 100%;
+    flex: 1;
+    min-height: 200px;
+    border: none;
+    border-radius: var(--radius-md);
+    background-color: var(--bg-primary);
+}
+
+/* --- Preview Image --- */
+.preview-image {
+    border-radius: var(--radius-sm);
+}
+
+/* --- Lightweight Animations --- */
+.fade-in {
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ====================================================================
+   PHASE 3 – Processing Screen Styles
+   ==================================================================== */
+
+.processing-timer {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--warning);
+    background-color: rgba(245, 158, 11, 0.1);
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.processing-status-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: var(--bg-primary);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+}
+
+.processing-spinner-large {
+    width: 24px;
+    height: 24px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.processing-status-text {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.processing-progress-section {
+    margin-bottom: var(--spacing-lg);
+}
+
+.processing-actions {
+    margin-top: auto;
+}
+
+/* ====================================================================
+   PHASE 4 – Preview & LaTeX Viewer Styles
+   ==================================================================== */
+
+/* --- Zoom Toolbar --- */
+.zoom-toolbar {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 2px;
+    margin-left: auto;
+    margin-right: var(--spacing-sm);
+}
+
+.zoom-toolbar .btn {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    height: 24px;
+    min-width: 24px;
+}
+
+/* --- LaTeX Line Viewer --- */
+.latex-viewer-container {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-sm) 0;
+    max-height: 500px;
+    overflow: auto;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.latex-placeholder {
+    color: var(--text-muted);
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    padding: var(--spacing-md);
+    text-align: center;
+}
+
+.latex-line {
+    display: flex;
+    width: 100%;
+    align-items: flex-start;
+}
+
+.latex-line:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+.line-number {
+    display: inline-block;
+    width: 3.5rem;
+    text-align: right;
+    padding-right: var(--spacing-sm);
+    color: var(--text-muted);
+    user-select: none;
+    -webkit-user-select: none;
+    border-right: 1px solid var(--border-color);
+    margin-right: var(--spacing-sm);
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+.line-content {
+    flex: 1;
+    white-space: pre;
+    color: var(--text-primary);
+    padding-right: var(--spacing-sm);
+    word-break: normal;
+}
+
+.latex-viewer-container.word-wrap .line-content {
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+/* --- Diagram Assets Grid & Hover --- */
+.assets-grid {
+    transition: var(--transition-base);
+}
+
+.asset-card {
+    cursor: pointer;
+    transition: var(--transition-base);
+}
+
+.asset-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* --- Diagram Lightbox --- */
+.diagram-lightbox {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(8px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.25s ease-in-out;
+}
+
+.diagram-lightbox.active {
+    display: flex;
+    opacity: 1;
+}
+
+.lightbox-img {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+    border-radius: var(--radius-md);
+    background-color: #fff; /* White canvas background to render formulas */
+    padding: var(--spacing-md);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    transform: scale(0.95);
+    transition: transform 0.25s ease-in-out;
+}
+
+.diagram-lightbox.active .lightbox-img {
+    transform: scale(1);
+}
+
+.lightbox-close-btn {
+    position: absolute;
+    top: var(--spacing-lg);
+    right: var(--spacing-lg);
+    font-size: 2rem;
+    color: var(--text-secondary);
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition-base);
+}
+
+.lightbox-close-btn:hover {
+    color: var(--text-primary);
+    transform: scale(1.1);
+}
+
+/* Adjust document viewport overflow behavior for panning */
+.view-port {
+    overflow: auto;
+    position: relative;
+    padding: var(--spacing-sm);
+}
+
+.preview-image {
+    transition: width 0.15s ease-out, height 0.15s ease-out;
+    transform-origin: center center;
+    max-width: 100%;
+    max-height: 100%;
+}
+

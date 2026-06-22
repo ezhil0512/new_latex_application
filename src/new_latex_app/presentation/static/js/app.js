@@ -28,7 +28,14 @@ import {
     renderLatexViewer,
     closeDiagramLightbox,
 } from './modules/preview.js';
-import { formatBytes, copyToClipboard } from './modules/utils.js';
+import { formatBytes } from './modules/utils.js';
+import {
+    prepareTexDownload,
+    handleTexDownloadClick,
+    downloadZipExport,
+    copyLatexToClipboard,
+    revokeExportUrls
+} from './modules/export.js';
 
 // Core Application State
 const state = {
@@ -188,6 +195,7 @@ function clearSelection() {
 
     // Clean up Object URLs to free memory
     cleanupPreviewUrls(documentViewPort);
+    revokeExportUrls();
     documentViewPort.innerHTML = '<span class="placeholder-text">Preview loading...</span>';
 
     // Hide panels
@@ -301,15 +309,9 @@ async function startLatexGeneration() {
         renderDiagramAssets(state.sessionId, state.assets, assetsList);
         renderStructurePreview(state.latexCode, structurePreview);
 
-        // Bind download link parameters
+        // Prepare the .tex download URL and properties (anchor-based)
         if (downloadTexBtn && state.latexCode) {
-            const texBlob = new Blob([state.latexCode], { type: 'text/plain;charset=utf-8' });
-            downloadTexBtn.href = URL.createObjectURL(texBlob);
-            downloadTexBtn.download = state.selectedFile.name.replace(/\.[^/.]+$/, "") + ".tex";
-        }
-
-        if (downloadZipBtn && state.sessionId) {
-            downloadZipBtn.href = `/download/${state.sessionId}`;
+            prepareTexDownload(downloadTexBtn, state.latexCode, state.selectedFile.name);
         }
 
     } catch (error) {
@@ -391,19 +393,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Copy to clipboard
-    copyLatexBtn.addEventListener('click', async () => {
+    copyLatexBtn.addEventListener('click', () => {
         if (!state.latexCode) return;
-        const success = await copyToClipboard(state.latexCode);
-        if (success) {
-            const originalText = copyLatexBtn.textContent;
-            copyLatexBtn.textContent = 'Copied!';
-            copyLatexBtn.style.borderColor = 'var(--success)';
-            setTimeout(() => {
-                copyLatexBtn.textContent = originalText;
-                copyLatexBtn.style.borderColor = 'var(--border-color)';
-            }, 2000);
-        } else {
-            showError('Failed to copy text to clipboard.');
-        }
+        copyLatexToClipboard(state.latexCode, copyLatexBtn);
+    });
+
+    // Download .TEX success feedback
+    downloadTexBtn.addEventListener('click', () => {
+        handleTexDownloadClick(downloadTexBtn);
+    });
+
+    // Programmatic .ZIP download via fetch with error validation
+    downloadZipBtn.addEventListener('click', () => {
+        if (!state.sessionId) return;
+        downloadZipExport(state.sessionId, downloadZipBtn);
     });
 });

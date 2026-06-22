@@ -108,14 +108,7 @@ export function toggleActionControls(disabled) {
         }
 
         if (downloadZipBtn) {
-            const hasZip = downloadZipBtn.getAttribute('href') !== null && downloadZipBtn.getAttribute('href') !== '';
-            if (hasZip && hasContent) {
-                downloadZipBtn.classList.remove('disabled');
-                downloadZipBtn.removeAttribute('aria-disabled');
-            } else {
-                downloadZipBtn.classList.add('disabled');
-                downloadZipBtn.setAttribute('aria-disabled', 'true');
-            }
+            downloadZipBtn.disabled = !hasContent;
         }
     } else {
         // Disable controls when processing
@@ -127,8 +120,7 @@ export function toggleActionControls(disabled) {
             downloadTexBtn.setAttribute('aria-disabled', 'true');
         }
         if (downloadZipBtn) {
-            downloadZipBtn.classList.add('disabled');
-            downloadZipBtn.setAttribute('aria-disabled', 'true');
+            downloadZipBtn.disabled = true;
         }
     }
 }
@@ -403,5 +395,72 @@ export function setupViewerControls() {
             selection.removeAllRanges();
             selection.addRange(range);
         });
+    }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Phase 5 – Export Toast Notification                                */
+/* ------------------------------------------------------------------ */
+
+/** @type {number|null} Active toast auto-hide timer */
+let toastTimer = null;
+
+/**
+ * Show an export toast notification with success or error styling.
+ * Auto-hides after 3 seconds. Uses aria-live for screen reader announcements.
+ * @param {string} message
+ * @param {'success'|'error'} type
+ */
+export function showExportToast(message, type = 'success') {
+    const toast = document.getElementById('export-toast');
+    if (!toast) return;
+
+    const icon = document.getElementById('export-toast-icon');
+    const text = document.getElementById('export-toast-text');
+
+    // Clear any existing timer
+    if (toastTimer) {
+        clearTimeout(toastTimer);
+        toastTimer = null;
+    }
+
+    // Reset classes
+    toast.classList.remove('show', 'toast-success', 'toast-error');
+
+    // Set content
+    if (icon) {
+        icon.textContent = type === 'success' ? '✓' : '✕';
+    }
+    if (text) {
+        text.textContent = message;
+    }
+
+    // Apply type class
+    toast.classList.add(type === 'success' ? 'toast-success' : 'toast-error');
+
+    // Force reflow to restart transition
+    void toast.offsetWidth;
+
+    // Show toast
+    toast.classList.add('show');
+
+    // Auto-hide after 3 seconds
+    toastTimer = setTimeout(() => {
+        hideExportToast();
+    }, 3000);
+}
+
+/**
+ * Hide the export toast notification immediately.
+ */
+export function hideExportToast() {
+    const toast = document.getElementById('export-toast');
+    if (!toast) return;
+
+    toast.classList.remove('show');
+
+    if (toastTimer) {
+        clearTimeout(toastTimer);
+        toastTimer = null;
     }
 }

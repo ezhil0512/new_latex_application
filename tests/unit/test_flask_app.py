@@ -91,3 +91,21 @@ def test_flask_app_preview_asset_traversal_prevention() -> None:
         # Prevent traversal containing backslashes
         res_backslash = client.get(f"/preview/{random_session}/assets/subfolder\\diagram_1.png")
         assert res_backslash.status_code in (400, 404)
+
+
+def test_flask_app_download_endpoint() -> None:
+    """Download endpoint should validate UUID format and handle non-existent sessions gracefully."""
+    app = create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        # Invalid UUID format
+        res = client.get("/download/invalid-uuid")
+        assert res.status_code == 400
+        assert res.get_json()["error"] == "Invalid session ID format"
+
+        # Correct UUID format, but session not found
+        random_session = str(uuid4())
+        res = client.get(f"/download/{random_session}")
+        assert res.status_code == 404
+        assert res.get_json()["error"] == "Export package not found"
+

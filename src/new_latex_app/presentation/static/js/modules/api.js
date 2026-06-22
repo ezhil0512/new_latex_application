@@ -67,3 +67,44 @@ export async function getPreviewData(sessionId, { signal } = {}) {
         return { error: 'Network error: could not reach the server.' };
     }
 }
+
+/**
+ * Fetch the export ZIP package for a session.
+ * Uses fetch() instead of a bare anchor href to allow HTTP error interception
+ * before triggering the download, preventing the browser from navigating to
+ * an error JSON response.
+ * @param {string} sessionId
+ * @returns {Promise<object>} { blob, filename } on success, { error } on failure
+ */
+export async function fetchExportZip(sessionId) {
+    try {
+        const response = await fetch(`/download/${encodeURIComponent(sessionId)}`, {
+            method: 'GET',
+        });
+
+        if (!response.ok) {
+            try {
+                const errorData = await response.json();
+                return { error: errorData.error || `Download failed (${response.status})` };
+            } catch (_e) {
+                return { error: `Download failed (${response.status})` };
+            }
+        }
+
+        const blob = await response.blob();
+
+        // Extract filename from Content-Disposition header if available
+        const disposition = response.headers.get('Content-Disposition');
+        let filename = `export_${sessionId}.zip`;
+        if (disposition) {
+            const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+            if (match && match[1]) {
+                filename = match[1].replace(/['"]/g, '');
+            }
+        }
+
+        return { blob, filename };
+    } catch (_err) {
+        return { error: 'Network error: could not download export package.' };
+    }
+}

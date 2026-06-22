@@ -864,3 +864,96 @@ body {
     max-height: 100%;
 }
 
+/* ====================================================================
+   PHASE 5 – Export Interface Styles
+   ==================================================================== */
+
+/* --- Export Toast Notification --- */
+.export-toast {
+    position: fixed;
+    bottom: var(--spacing-lg);
+    right: var(--spacing-lg);
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    z-index: 1050;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+    transition: opacity 0.25s ease-in-out, transform 0.25s ease-in-out;
+}
+
+.export-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.export-toast-icon {
+    font-weight: bold;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.export-toast.toast-success {
+    border-color: rgba(16, 185, 129, 0.4);
+}
+.export-toast.toast-success .export-toast-icon {
+    color: var(--success);
+}
+
+.export-toast.toast-error {
+    border-color: rgba(239, 68, 68, 0.4);
+}
+.export-toast.toast-error .export-toast-icon {
+    color: var(--danger);
+}
+
+.export-toast-text {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* --- Export Buttons Flash & Loading Styles --- */
+.btn-export-success {
+    animation: flashSuccess 2s ease;
+}
+
+.btn-export-error {
+    animation: flashError 3s ease;
+}
+
+@keyframes flashSuccess {
+    0%, 100% { border-color: var(--border-color); }
+    10% { border-color: var(--success); box-shadow: 0 0 8px rgba(16, 185, 129, 0.4); }
+}
+
+@keyframes flashError {
+    0%, 100% { border-color: var(--border-color); }
+    10% { border-color: var(--danger); box-shadow: 0 0 8px rgba(239, 68, 68, 0.4); }
+}
+
+.btn-export-loading {
+    cursor: wait !important;
+    opacity: 0.8 !important;
+}
+
+.export-spinner {
+    width: 12px;
+    height: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: var(--text-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 4px;
+}
+
+

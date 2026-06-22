@@ -137,7 +137,7 @@
                         <button id="word-wrap-toggle" class="btn btn-secondary btn-sm" disabled>Word Wrap</button>
                         <button id="copy-latex-btn" class="btn btn-secondary btn-sm" disabled>Copy LaTeX</button>
                         <a id="download-tex-btn" class="btn btn-secondary btn-sm disabled" role="button" aria-disabled="true">Download .TEX</a>
-                        <a id="download-zip-btn" class="btn btn-primary btn-sm disabled" role="button" aria-disabled="true">Download Export (.ZIP)</a>
+                        <button id="download-zip-btn" class="btn btn-primary btn-sm" disabled>Download Export (.ZIP)</button>
                     </div>
                 </div>
                 <div class="card-body">
@@ -163,6 +163,12 @@
     <div id="diagram-lightbox" class="diagram-lightbox" role="dialog" aria-hidden="true" aria-label="Diagram Lightbox">
         <button id="lightbox-close-btn" class="lightbox-close-btn" aria-label="Close Lightbox">✕</button>
         <img id="lightbox-img" class="lightbox-img" src="" alt="Enlarged Diagram" />
+    </div>
+
+    <!-- Export Toast Notification Container -->
+    <div id="export-toast" class="export-toast" role="status" aria-live="polite">
+        <span id="export-toast-icon" class="export-toast-icon" aria-hidden="true"></span>
+        <span id="export-toast-text" class="export-toast-text"></span>
     </div>
 
     <!-- JavaScript modular entrypoint linked using Flask static url helper -->

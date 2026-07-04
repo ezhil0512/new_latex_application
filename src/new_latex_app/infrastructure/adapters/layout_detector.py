@@ -107,7 +107,7 @@ class OpenCvLayoutDetector:
         horizontal_kernel = max(15, page_width // 45)
         vertical_kernel = max(3, page_height // 220)
         kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (horizontal_kernel, vertical_kernel))
-        grouped = cv2.dilate(foreground, kernel, iterations=2)
+        grouped = cv2.dilate(foreground, kernel, iterations=1)
         contours, _ = cv2.findContours(grouped, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         candidates: list[_CandidateRegion] = []

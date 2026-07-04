@@ -4,7 +4,7 @@ import logging
 import time
 from typing import Any
 
-from new_latex_app.domain.entities import DocumentRegion, DocumentStructure
+from new_latex_app.domain.entities import DocumentRegion, DocumentStructure, RecognizedContent
 from new_latex_app.domain.enums import RegionType
 from new_latex_app.domain.exceptions import PipelineStageError
 
@@ -30,6 +30,32 @@ class MetadataRuleEngine:
         logger.info("Rule engine started")
 
         self._validate_structure(structure)
+
+        # Consume reconstructed lines if present in content metadata
+        updated_contents = []
+        for content in structure.contents:
+            reconstructed_lines = content.metadata.get("reconstructed_lines")
+            if reconstructed_lines is not None:
+                reconstructed_text = "\n".join(
+                    line["text"] for line in reconstructed_lines if isinstance(line, dict) and "text" in line
+                )
+                content = RecognizedContent(
+                    region=content.region,
+                    latex=content.latex,
+                    text=reconstructed_text,
+                    asset_path=content.asset_path,
+                    metadata=content.metadata,
+                )
+            updated_contents.append(content)
+
+        structure = DocumentStructure(
+            title=structure.title,
+            pages=structure.pages,
+            regions=structure.regions,
+            contents=tuple(updated_contents),
+            metadata=structure.metadata,
+        )
+
         questions = self._normalize_questions(structure)
 
         metadata = dict(structure.metadata)

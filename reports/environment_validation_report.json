@@ -6,8 +6,8 @@
     "machine": "AMD64"
   },
   "environment": {
-    "HF_HUB_OFFLINE": "1",
-    "TRANSFORMERS_OFFLINE": "1",
+    "HF_HUB_OFFLINE": null,
+    "TRANSFORMERS_OFFLINE": null,
     "DOCLAYOUT_YOLO_WEIGHTS": null,
     "TATR_MODEL_DIR": null,
     "PIX2TEXT_MODEL_DIR": null
@@ -19,7 +19,7 @@
       "status": "PASS",
       "detail": "Imported numpy",
       "version": "1.26.4",
-      "seconds": 0.195
+      "seconds": 0.263
     },
     {
       "name": "OpenCV",
@@ -27,7 +27,7 @@
       "status": "PASS",
       "detail": "Imported cv2",
       "version": "4.10.0",
-      "seconds": 1.602
+      "seconds": 0.12
     },
     {
       "name": "OpenCV distribution uniqueness",
@@ -35,7 +35,7 @@
       "status": "FAIL",
       "detail": "RuntimeError: Multiple OpenCV distributions installed; cv2 namespace collision risk: opencv-python==4.10.0.84, opencv-contrib-python==4.10.0.84, opencv-python-headless==4.10.0.84\nTraceback (most recent call last):\n  File \"C:\\Users\\ezhil\\OneDrive\\Desktop\\new_latex_app\\tools\\validate_environment.py\", line 42, in _run_check\n    version, detail = func()\n  File \"C:\\Users\\ezhil\\OneDrive\\Desktop\\new_latex_app\\tools\\validate_environment.py\", line 247, in check\n    raise RuntimeError(\nRuntimeError: Multiple OpenCV distributions installed; cv2 namespace collision risk: opencv-python==4.10.0.84, opencv-contrib-python==4.10.0.84, opencv-python-headless==4.10.0.84\n",
       "version": null,
-      "seconds": 0.011
+      "seconds": 0.02
     },
     {
       "name": "Pillow",
@@ -43,7 +43,7 @@
       "status": "PASS",
       "detail": "Imported PIL",
       "version": "10.4.0",
-      "seconds": 0.002
+      "seconds": 0.006
     },
     {
       "name": "PyMuPDF",
@@ -51,7 +51,7 @@
       "status": "PASS",
       "detail": "Imported fitz",
       "version": "1.24.14",
-      "seconds": 0.109
+      "seconds": 0.232
     },
     {
       "name": "pdf2image",
@@ -59,7 +59,7 @@
       "status": "PASS",
       "detail": "Imported pdf2image",
       "version": null,
-      "seconds": 0.036
+      "seconds": 0.061
     },
     {
       "name": "torch",
@@ -67,7 +67,7 @@
       "status": "PASS",
       "detail": "Imported torch",
       "version": "2.5.1+cpu",
-      "seconds": 3.542
+      "seconds": 13.135
     },
     {
       "name": "torchvision",
@@ -75,7 +75,7 @@
       "status": "PASS",
       "detail": "Imported torchvision",
       "version": "0.20.1+cpu",
-      "seconds": 3.466
+      "seconds": 3.481
     },
     {
       "name": "torchvision model init",
@@ -83,7 +83,7 @@
       "status": "PASS",
       "detail": "Initialized torchvision resnet18 with weights=None",
       "version": "2.5.1+cpu",
-      "seconds": 0.221
+      "seconds": 0.162
     },
     {
       "name": "paddle",
@@ -91,7 +91,7 @@
       "status": "PASS",
       "detail": "Imported paddle",
       "version": "3.1.1",
-      "seconds": 4.955
+      "seconds": 10.89
     },
     {
       "name": "PaddlePaddle runtime",
@@ -99,7 +99,7 @@
       "status": "PASS",
       "detail": "paddle.utils.run_check completed",
       "version": "3.1.1",
-      "seconds": 0.469
+      "seconds": 0.105
     },
     {
       "name": "paddleocr",
@@ -107,7 +107,7 @@
       "status": "PASS",
       "detail": "Imported paddleocr",
       "version": "3.2.0",
-      "seconds": 15.53
+      "seconds": 26.554
     },
     {
       "name": "PaddleOCR init",
@@ -115,7 +115,7 @@
       "status": "PASS",
       "detail": "PaddleOCR initialized, but not all local model directories were provided",
       "version": "3.2.0",
-      "seconds": 14.33
+      "seconds": 7.387
     },
     {
       "name": "PaddleOCR offline assets",
@@ -123,7 +123,7 @@
       "status": "FAIL",
       "detail": "FileNotFoundError: Missing local PaddleOCR model dirs: PADDLEOCR_DOC_ORIENTATION_MODEL_DIR, PADDLEOCR_DOC_UNWARPING_MODEL_DIR, PADDLEOCR_TEXTLINE_ORIENTATION_MODEL_DIR, PADDLEOCR_TEXT_DETECTION_MODEL_DIR, PADDLEOCR_TEXT_RECOGNITION_MODEL_DIR\nTraceback (most recent call last):\n  File \"C:\\Users\\ezhil\\OneDrive\\Desktop\\new_latex_app\\tools\\validate_environment.py\", line 42, in _run_check\n    version, detail = func()\n  File \"C:\\Users\\ezhil\\OneDrive\\Desktop\\new_latex_app\\tools\\validate_environment.py\", line 158, in check\n    raise FileNotFoundError(\"Missing local PaddleOCR model dirs: \" + \", \".join(missing))\nFileNotFoundError: Missing local PaddleOCR model dirs: PADDLEOCR_DOC_ORIENTATION_MODEL_DIR, PADDLEOCR_DOC_UNWARPING_MODEL_DIR, PADDLEOCR_TEXTLINE_ORIENTATION_MODEL_DIR, PADDLEOCR_TEXT_DETECTION_MODEL_DIR, PADDLEOCR_TEXT_RECOGNITION_MODEL_DIR\n",
       "version": null,
-      "seconds": 0.001
+      "seconds": 0.0
     },
     {
       "name": "pix2text",
@@ -131,15 +131,15 @@
       "status": "PASS",
       "detail": "Imported pix2text",
       "version": "<module 'pix2text.__version__' from 'C:\\\\Users\\\\ezhil\\\\OneDrive\\\\Desktop\\\\new_latex_app\\\\.venv-validation\\\\lib\\\\site-packages\\\\pix2text\\\\__version__.py'>",
-      "seconds": 3.216
+      "seconds": 3.158
     },
     {
       "name": "Pix2Text init",
       "category": "model",
       "status": "FAIL",
-      "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:\\\\Users\\\\ezhil\\\\AppData\\\\Roaming\\\\pix2text\\\\1.1\\\\layout-docyolo\\\\doclayout_yolo_docstructbench_imgsz1024.pt'\nTraceback (most recent call last):\n  File \"C:\\Users\\ezhil\\OneDrive\\Desktop\\new_latex_app\\tools\\validate_environment.py\", line 42, in _run_check\n    version, detail = func()\n  File \"C:\\Users\\ezhil\\OneDrive\\Desktop\\new_latex_app\\tools\\validate_environment.py\", line 176, in check\n    Pix2Text()\n  File \"C:\\Users\\ezhil\\OneDrive\\Desktop\\new_latex_app\\.venv-validation\\lib\\site-packages\\pix2text\\pix_to_text.py\", line 206, in __init__\n    layout_parser = prepare_layout_engine({}, device=device)\nFileNotFoundError: [Errno 2] No such file or directory: 'C:\\\\Users\\\\ezhil\\\\AppData\\\\Roaming\\\\pix2text\\\\1.1\\\\layout-docyolo\\\\doclayout_yolo_docstructbench_imgsz1024.pt'\n",
+      "detail": "Exception: data did not match any variant of untagged enum ModelWrapper at line 8375 column 3\nTraceback (most recent call last):\n  File \"C:\\Users\\ezhil\\OneDrive\\Desktop\\new_latex_app\\tools\\validate_environment.py\", line 42, in _run_check\n    version, detail = func()\n  File \"C:\\Users\\ezhil\\OneDrive\\Desktop\\new_latex_app\\tools\\validate_environment.py\", line 176, in check\n    Pix2Text()\n  File \"C:\\Users\\ezhil\\OneDrive\\Desktop\\new_latex_app\\.venv-validation\\lib\\site-packages\\pix2text\\pix_to_text.py\", line 209, in __init__\n    text_formula_ocr = TextFormulaOCR.from_config(\nException: data did not match any variant of untagged enum ModelWrapper at line 8375 column 3\n",
       "version": null,
-      "seconds": 1.125
+      "seconds": 415.779
     },
     {
       "name": "DocLayout-YOLO",
@@ -163,7 +163,7 @@
       "status": "PASS",
       "detail": "Imported img2table",
       "version": null,
-      "seconds": 0.001
+      "seconds": 0.006
     },
     {
       "name": "transformers",
@@ -179,7 +179,7 @@
       "status": "FAIL",
       "detail": "FileNotFoundError: Set TATR_MODEL_DIR to a local Table Transformer model directory\nTraceback (most recent call last):\n  File \"C:\\Users\\ezhil\\OneDrive\\Desktop\\new_latex_app\\tools\\validate_environment.py\", line 42, in _run_check\n    version, detail = func()\n  File \"C:\\Users\\ezhil\\OneDrive\\Desktop\\new_latex_app\\tools\\validate_environment.py\", line 206, in check\n    raise FileNotFoundError(\"Set TATR_MODEL_DIR to a local Table Transformer model directory\")\nFileNotFoundError: Set TATR_MODEL_DIR to a local Table Transformer model directory\n",
       "version": null,
-      "seconds": 0.0
+      "seconds": 0.001
     },
     {
       "name": "Jinja2",
@@ -187,7 +187,7 @@
       "status": "PASS",
       "detail": "Imported jinja2",
       "version": "3.1.6",
-      "seconds": 0.0
+      "seconds": 0.001
     },
     {
       "name": "pylatexenc",
@@ -195,7 +195,7 @@
       "status": "PASS",
       "detail": "Imported pylatexenc",
       "version": "2.10",
-      "seconds": 0.002
+      "seconds": 0.011
     },
     {
       "name": "PyYAML",
@@ -203,7 +203,7 @@
       "status": "PASS",
       "detail": "Imported yaml",
       "version": "6.0.2",
-      "seconds": 0.0
+      "seconds": 0.001
     },
     {
       "name": "pydantic",
@@ -227,7 +227,7 @@
       "status": "PASS",
       "detail": "Imported loguru",
       "version": "0.7.3",
-      "seconds": 0.049
+      "seconds": 0.12
     },
     {
       "name": "pdftoppm",
@@ -235,7 +235,7 @@
       "status": "PASS",
       "detail": "Found C:\\Users\\ezhil\\AppData\\Local\\Programs\\MiKTeX\\miktex\\bin\\x64\\pdftoppm.EXE; pdftoppm version 24.04.0",
       "version": null,
-      "seconds": 0.412
+      "seconds": 1.402
     },
     {
       "name": "pdftocairo",
@@ -243,7 +243,7 @@
       "status": "PASS",
       "detail": "Found C:\\Users\\ezhil\\AppData\\Local\\Programs\\MiKTeX\\miktex\\bin\\x64\\pdftocairo.EXE; pdftocairo version 24.04.0",
       "version": null,
-      "seconds": 0.392
+      "seconds": 0.639
     },
     {
       "name": "pdflatex",
@@ -251,7 +251,7 @@
       "status": "PASS",
       "detail": "Found C:\\Users\\ezhil\\AppData\\Local\\Programs\\MiKTeX\\miktex\\bin\\x64\\pdflatex.EXE; MiKTeX-pdfTeX 4.23 (MiKTeX 25.12)",
       "version": null,
-      "seconds": 0.61
+      "seconds": 0.597
     },
     {
       "name": "pip check",
@@ -259,7 +259,7 @@
       "status": "PASS",
       "detail": "No broken requirements found.",
       "version": null,
-      "seconds": 2.544
+      "seconds": 2.22
     }
   ]
 }

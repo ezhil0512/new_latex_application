@@ -2,14 +2,13 @@
 
 from dataclasses import dataclass
 import logging
+import threading
 
 from new_latex_app.application.pipeline import DocumentPipeline
 from new_latex_app.application.services import DocumentProcessingService
-from new_latex_app.infrastructure.adapters.stubs import (
-    StubPdfCompiler,
-    StubRegionClassifier,
-    StubValidationEngine,
-)
+from new_latex_app.infrastructure.adapters.pdf_compiler import PassThroughPdfCompiler
+from new_latex_app.infrastructure.adapters.validation_engine import PassThroughValidationEngine
+from new_latex_app.infrastructure.adapters.region_classifier import VisualRegionClassifier
 from new_latex_app.infrastructure.adapters.document_loader import PyMuPdfDocumentLoader
 from new_latex_app.infrastructure.adapters.image_preprocessor import OpenCvImagePreprocessor
 from new_latex_app.infrastructure.adapters.layout_detector import OpenCvLayoutDetector
@@ -29,6 +28,11 @@ from new_latex_app.infrastructure.logging_config import LoggingConfigurator
 from new_latex_app.infrastructure.workspace import TemporaryWorkspaceManager
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+
+_paddle_ocr_recognizer: PaddleOcrTextRecognizer | None = None
+_pix2text_recognizer: Pix2TextMathOcrRecognizer | None = None
+_recognizer_lock = threading.Lock()
 
 
 @dataclass(frozen=True, slots=True)
@@ -56,26 +60,33 @@ class Container:
     def document_pipeline(self) -> DocumentPipeline:
         """Create the document pipeline with replaceable adapters."""
         logger.info("Document pipeline assembly started")
+        global _paddle_ocr_recognizer, _pix2text_recognizer
+        with _recognizer_lock:
+            if _paddle_ocr_recognizer is None:
+                _paddle_ocr_recognizer = PaddleOcrTextRecognizer()
+            if _pix2text_recognizer is None:
+                _pix2text_recognizer = Pix2TextMathOcrRecognizer()
+
         return DocumentPipeline(
             document_loader=PyMuPdfDocumentLoader(),
             image_preprocessor=OpenCvImagePreprocessor(),
             layout_detector=OpenCvLayoutDetector(),
             question_segmenter=VisualQuestionSegmenter(),
-            region_classifier=StubRegionClassifier(),
+            region_classifier=VisualRegionClassifier(),
             model_router=CompositeModelRouter(
                 recognizers=(
                     DiagramAssetProcessor(),
-                    PaddleOcrTextRecognizer(),
-                    Pix2TextMathOcrRecognizer(),
+                    _paddle_ocr_recognizer,
+                    _pix2text_recognizer,
                 )
             ),
             structure_analyzer=MetadataDocumentStructureAnalyzer(),
             rule_engine=MetadataRuleEngine(),
             chemistry_processor=self.chemistry_processor(),
             latex_builder=DefaultLatexBuilder(),
-            validation_engine=StubValidationEngine(),
+            validation_engine=PassThroughValidationEngine(),
             export_manager=self.export_manager(),
-            pdf_compiler=StubPdfCompiler(),
+            pdf_compiler=PassThroughPdfCompiler(),
         )
 
     def chemistry_processor(self) -> MetadataChemistryProcessor:

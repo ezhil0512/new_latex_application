@@ -93,6 +93,24 @@ def test_apply_associates_figures_and_tables() -> None:
     assert normalized["table_region_indices"] == (2,)
 
 
+def test_apply_consumes_reconstructed_lines() -> None:
+    reconstructed = [
+        {"text": "Line 1 reconstructed"},
+        {"text": "Line 2 reconstructed"}
+    ]
+    text = RecognizedContent(
+        region=_region(1),
+        text="Original OCR Text",
+        metadata={"reconstructed_lines": reconstructed}
+    )
+    question = {"question_id": "page-1-question-1", "page_number": 1, "question_index": 1, "content_indices": (0,), "region_indices": (0,)}
+    structure = _structure((text,), (text.region,), (question,))
+
+    result = MetadataRuleEngine().apply(structure)
+    assert result.contents[0].text == "Line 1 reconstructed\nLine 2 reconstructed"
+    assert result.contents[0].metadata.get("reconstructed_lines") == reconstructed
+
+
 def test_apply_rejects_empty_document() -> None:
     with pytest.raises(PipelineStageError, match="empty document structure"):
         MetadataRuleEngine().apply(DocumentStructure(title=None, pages=(), regions=(), contents=(), metadata={}))

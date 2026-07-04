@@ -47,6 +47,7 @@ class PageImage:
     width: int
     height: int
     dpi: int | None = None
+    original_path: Path | None = None
 
 
 @dataclass(frozen=True, slots=True)

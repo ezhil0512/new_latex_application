@@ -69,6 +69,13 @@ class OpenCvImagePreprocessor:
             deskewed = self._deskew_if_applicable(enhanced)
             thresholded = self._adaptive_threshold(deskewed)
 
+            # Save original color image (resized to match) for OCR
+            original_path = output_dir / f"original_page_{page.page_number:04d}.png"
+            resized_color = self._resize_color_if_required(normalized)
+            if not cv2.imwrite(str(original_path), resized_color):
+                raise PipelineStageError("Failed to write original page image")
+
+            # Save thresholded image for layout detection
             output_path = output_dir / f"page_{page.page_number:04d}.png"
             if not cv2.imwrite(str(output_path), thresholded):
                 raise PipelineStageError("Failed to write preprocessed page image")
@@ -80,6 +87,7 @@ class OpenCvImagePreprocessor:
                 width=width,
                 height=height,
                 dpi=page.dpi,
+                original_path=original_path,
             )
         except cv2.error as error:
             logger.warning("OpenCV preprocessing failed")
@@ -111,6 +119,17 @@ class OpenCvImagePreprocessor:
 
     def _resize_if_required(self, image: np.ndarray) -> np.ndarray:
         """Resize only when a page exceeds the configured maximum dimension."""
+        height, width = image.shape[:2]
+        largest_dimension = max(height, width)
+        if largest_dimension <= self._max_dimension:
+            return image
+        scale = self._max_dimension / float(largest_dimension)
+        new_width = max(1, int(round(width * scale)))
+        new_height = max(1, int(round(height * scale)))
+        return cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_AREA)
+
+    def _resize_color_if_required(self, image: np.ndarray) -> np.ndarray:
+        """Resize a color image when it exceeds the configured maximum dimension."""
         height, width = image.shape[:2]
         largest_dimension = max(height, width)
         if largest_dimension <= self._max_dimension:

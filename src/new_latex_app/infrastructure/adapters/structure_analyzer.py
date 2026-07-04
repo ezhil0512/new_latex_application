@@ -7,6 +7,7 @@ import time
 from new_latex_app.domain.entities import DocumentRegion, DocumentStructure, PageImage, RecognizedContent
 from new_latex_app.domain.enums import RegionType
 from new_latex_app.domain.exceptions import PipelineStageError
+from new_latex_app.domain.services.spatial_block_segmenter import SpatialBlockSegmenter
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -23,6 +24,10 @@ class _QuestionBucket:
 
 class MetadataDocumentStructureAnalyzer:
     """Organize segmented recognition outputs into question hierarchy metadata."""
+
+    def __init__(self) -> None:
+        """Initialize structure analyzer with a spatial block segmenter."""
+        self._segmenter = SpatialBlockSegmenter()
 
     _FIGURE_REGION_TYPES: frozenset[RegionType] = frozenset(
         {
@@ -47,6 +52,34 @@ class MetadataDocumentStructureAnalyzer:
 
         self._validate_pages(pages)
         self._validate_contents(contents, pages)
+
+        new_contents = []
+        for content in contents:
+            lines = self._reconstruct_lines(content)
+            
+            reconstructed = content.metadata.get("reconstructed_lines")
+            if reconstructed is None and lines is not None:
+                reconstructed = lines
+
+            new_metadata = dict(content.metadata)
+            if lines is not None:
+                new_metadata["reconstructed_lines"] = lines
+
+            if reconstructed:
+                spatial_blocks = self._segmenter.segment_lines(reconstructed)
+                if spatial_blocks:
+                    new_metadata["spatial_blocks"] = spatial_blocks
+
+            if lines is not None or "spatial_blocks" in new_metadata:
+                content = RecognizedContent(
+                    region=content.region,
+                    latex=content.latex,
+                    text=content.text,
+                    asset_path=content.asset_path,
+                    metadata=new_metadata
+                )
+            new_contents.append(content)
+        contents = tuple(new_contents)
 
         ordered_contents = tuple(sorted(enumerate(contents), key=lambda item: self._sort_key(item[1].region)))
         regions = self._ordered_unique_regions(tuple(content.region for content in contents))
@@ -207,3 +240,91 @@ class MetadataDocumentStructureAnalyzer:
     def _sort_key(self, region: DocumentRegion) -> tuple[int, float, float, float]:
         """Sort regions by page, reading order, and position."""
         return (region.page_number, float(region.metadata["reading_order"]), region.bbox.y, region.bbox.x)
+
+    def _reconstruct_lines(self, content: RecognizedContent) -> list[dict[str, object]] | None:
+        """Reconstruct spatial text lines using raw_words geometry."""
+        raw_words = content.metadata.get("raw_words")
+        if not raw_words:
+            return None
+
+        valid = []
+        for w in raw_words:
+            txt = w.get("text")
+            bbox = w.get("bbox")
+            if not txt or bbox is None:
+                continue
+
+            if hasattr(bbox, "x") and hasattr(bbox, "y") and hasattr(bbox, "width") and hasattr(bbox, "height"):
+                xmin, ymin, h = bbox.x, bbox.y, bbox.height
+                xmax = bbox.x + bbox.width
+            elif isinstance(bbox, (list, tuple)) and len(bbox) == 4:
+                if all(isinstance(p, (list, tuple)) and len(p) >= 2 for p in bbox):
+                    ys = [p[1] for p in bbox]
+                    xs = [p[0] for p in bbox]
+                    xmin, ymin, h = min(xs), min(ys), max(ys) - min(ys)
+                    xmax = max(xs)
+                else:
+                    xmin, ymin, h = bbox[0], bbox[1], bbox[3]
+                    xmax = bbox[0] + bbox[2]
+            elif isinstance(bbox, dict) and "x" in bbox and "y" in bbox:
+                xmin, ymin, h = bbox["x"], bbox["y"], bbox.get("height", 0.0)
+                xmax = bbox["x"] + bbox.get("width", 0.0)
+            else:
+                continue
+
+            valid.append({
+                "text": txt,
+                "xmin": xmin,
+                "xmax": xmax,
+                "ymin": ymin,
+                "ymax": ymin + h,
+                "ycenter": ymin + h / 2.0,
+                "h": h,
+                "raw": w
+            })
+
+        if len(valid) < 2:
+            return None
+
+        heights = sorted(w["h"] for w in valid)
+        n = len(heights)
+        median_h = heights[n // 2] if n % 2 != 0 else (heights[n // 2 - 1] + heights[n // 2]) / 2.0
+        tolerance = 0.5 * median_h
+
+        valid.sort(key=lambda w: w["ycenter"])
+
+        lines_words = []
+        for w in valid:
+            placed = False
+            for line in lines_words:
+                line_ycenter = sum(lw["ycenter"] for lw in line) / len(line)
+                if abs(w["ycenter"] - line_ycenter) < tolerance:
+                    line.append(w)
+                    placed = True
+                    break
+            if not placed:
+                lines_words.append([w])
+
+        reconstructed = []
+        for line in lines_words:
+            line.sort(key=lambda w: w["xmin"])
+            text_line = " ".join(w["text"] for w in line)
+            line_xmin = min(w["xmin"] for w in line)
+            line_xmax = max(w["xmax"] for w in line)
+            line_ymin = min(w["ymin"] for w in line)
+            line_ymax = max(w["ymax"] for w in line)
+
+            line_bbox = [
+                [line_xmin, line_ymin],
+                [line_xmax, line_ymin],
+                [line_xmax, line_ymax],
+                [line_xmin, line_ymax]
+            ]
+
+            reconstructed.append({
+                "text": text_line,
+                "bbox": line_bbox,
+                "words": [w["raw"] for w in line]
+            })
+
+        return reconstructed

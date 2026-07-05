@@ -47,25 +47,20 @@ class PaddleOcrTextRecognizer:
         """Recognize text from regions classified as text."""
         started_at = time.perf_counter()
         logger.info("OCR recognition started")
-        print("[DIAGNOSTIC] OCR recognition started", flush=True)
         self._validate_workspace(workspace_path)
         page_index = {page.page_number: page for page in pages}
         text_regions = tuple(region for region in regions if region.region_type is RegionType.TEXT)
         if not text_regions:
             logger.info("OCR recognition completed in %.3fs", time.perf_counter() - started_at)
-            print(f"[DIAGNOSTIC] OCR recognition completed in {time.perf_counter() - started_at:.3f}s", flush=True)
             return ()
 
         logger.info("Before _get_engine()")
-        print("[DIAGNOSTIC] Before _get_engine()", flush=True)
         engine_start = time.perf_counter()
         engine = self._get_engine()
         engine_elapsed = time.perf_counter() - engine_start
         logger.info("After _get_engine() - initialization elapsed: %.3fs", engine_elapsed)
-        print(f"[DIAGNOSTIC] After _get_engine() - initialization elapsed: {engine_elapsed:.3f}s", flush=True)
 
         logger.info("OCR running on %d regions", len(text_regions))
-        print(f"[DIAGNOSTIC] OCR running on {len(text_regions)} regions", flush=True)
         results: list[RecognizedContent] = []
         for idx, region in enumerate(text_regions):
             page = page_index.get(region.page_number)
@@ -75,7 +70,6 @@ class PaddleOcrTextRecognizer:
             logger.info("Region %d of %d: page_number=%d (dimensions: width=%d, height=%d), bbox=(x=%.2f, y=%.2f, w=%.2f, h=%.2f)",
                         idx + 1, len(text_regions), page.page_number, page.width, page.height,
                         region.bbox.x, region.bbox.y, region.bbox.width, region.bbox.height)
-            print(f"[DIAGNOSTIC] Region {idx + 1} of {len(text_regions)}: page_number={page.page_number} (dimensions: width={page.width}, height={page.height}), bbox=(x={region.bbox.x:.2f}, y={region.bbox.y:.2f}, w={region.bbox.width:.2f}, h={region.bbox.height:.2f})", flush=True)
 
             crop = self._crop_region(page, region)
             text, confidence, raw_words = self._run_ocr(engine, crop)
@@ -94,7 +88,6 @@ class PaddleOcrTextRecognizer:
             )
 
         logger.info("OCR recognition completed in %.3fs", time.perf_counter() - started_at)
-        print(f"[DIAGNOSTIC] OCR recognition completed in {time.perf_counter() - started_at:.3f}s", flush=True)
         return tuple(results)
 
     def _validate_workspace(self, workspace_path: Path) -> None:
@@ -185,19 +178,15 @@ class PaddleOcrTextRecognizer:
         height, width = crop.shape[:2]
         pixel_count = width * height
         logger.info("OCR crop metrics: width=%d, height=%d, pixel_count=%d", width, height, pixel_count)
-        print(f"[DIAGNOSTIC] OCR crop metrics: width={width}, height={height}, pixel_count={pixel_count}", flush=True)
 
         try:
             logger.info("Before engine.ocr()")
-            print("[DIAGNOSTIC] Before engine.ocr()", flush=True)
             ocr_start = time.perf_counter()
             raw_result = self._call_engine(engine, crop)
             ocr_elapsed = time.perf_counter() - ocr_start
             logger.info("After engine.ocr() - inference elapsed: %.3fs", ocr_elapsed)
-            print(f"[DIAGNOSTIC] After engine.ocr() - inference elapsed: {ocr_elapsed:.3f}s", flush=True)
 
             logger.info("Before result extraction")
-            print("[DIAGNOSTIC] Before result extraction", flush=True)
             extract_start = time.perf_counter()
             words = self._extract_words(raw_result)
             text = " ".join(word for word, _ in words).strip()
@@ -205,7 +194,6 @@ class PaddleOcrTextRecognizer:
             average_confidence = sum(confidences) / len(confidences) if confidences else None
             extract_elapsed = time.perf_counter() - extract_start
             logger.info("Result extraction elapsed: %.3fs", extract_elapsed)
-            print(f"[DIAGNOSTIC] Result extraction elapsed: {extract_elapsed:.3f}s", flush=True)
             raw_words = self._extract_raw_words(raw_result)
         except Exception as error:
             logger.warning("PaddleOCR runtime failed")

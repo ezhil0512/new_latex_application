@@ -79,6 +79,70 @@ def test_apply_groups_mcq_options() -> None:
     assert normalized["blocks"][1]["block_type"] == "option_group"
 
 
+def test_apply_expands_spatial_blocks_into_mcq_options() -> None:
+    text = RecognizedContent(
+        region=_region(1, RegionType.TEXT),
+        text="Choose the correct answer.",
+        metadata={
+            "spatial_blocks": [
+                {
+                    "text": "Choose the correct answer.",
+                    "bbox": [[10.0, 10.0], [210.0, 10.0], [210.0, 30.0], [10.0, 30.0]],
+                },
+                {
+                    "text": "(a) 9.6 V",
+                    "bbox": [[20.0, 60.0], [80.0, 60.0], [80.0, 80.0], [20.0, 80.0]],
+                },
+                {
+                    "text": "(b) 2.6 V",
+                    "bbox": [[220.0, 60.0], [280.0, 60.0], [280.0, 80.0], [220.0, 80.0]],
+                },
+            ]
+        },
+    )
+    question = {"question_id": "page-1-question-1", "page_number": 1, "question_index": 1, "content_indices": (0,), "region_indices": (0,)}
+    structure = _structure((text,), (text.region,), (question,))
+
+    result = MetadataRuleEngine().apply(structure)
+
+    normalized = result.metadata["questions"][0]
+    assert tuple(content.text for content in result.contents) == ("Choose the correct answer.", "9.6 V", "2.6 V")
+    assert tuple(content.region.region_type for content in result.contents) == (
+        RegionType.TEXT,
+        RegionType.OPTION,
+        RegionType.OPTION,
+    )
+    assert normalized["content_indices"] == (0, 1, 2)
+    assert normalized["text_content_indices"] == (0,)
+    assert normalized["option_content_indices"] == (1, 2)
+    assert normalized["option_groups"] == ((1, 2),)
+    assert normalized["blocks"][0]["block_type"] == "paragraph"
+    assert normalized["blocks"][1]["block_type"] == "option_group"
+
+
+def test_apply_keeps_unmarked_spatial_blocks_as_paragraph() -> None:
+    text = RecognizedContent(
+        region=_region(1, RegionType.TEXT),
+        text="Line one\nLine two",
+        metadata={
+            "spatial_blocks": [
+                {"text": "Line one", "bbox": [[10.0, 10.0], [80.0, 10.0], [80.0, 30.0], [10.0, 30.0]]},
+                {"text": "Line two", "bbox": [[10.0, 40.0], [80.0, 40.0], [80.0, 60.0], [10.0, 60.0]]},
+            ]
+        },
+    )
+    question = {"question_id": "page-1-question-1", "page_number": 1, "question_index": 1, "content_indices": (0,), "region_indices": (0,)}
+    structure = _structure((text,), (text.region,), (question,))
+
+    result = MetadataRuleEngine().apply(structure)
+
+    normalized = result.metadata["questions"][0]
+    assert result.contents == (text,)
+    assert normalized["content_indices"] == (0,)
+    assert normalized["option_content_indices"] == ()
+    assert normalized["blocks"] == ({"block_type": "paragraph", "content_indices": (0,), "region_indices": (0,)},)
+
+
 def test_apply_associates_figures_and_tables() -> None:
     question = _content(_region(1, RegionType.TEXT), text="Refer")
     figure = _content(_region(2, RegionType.FIGURE))

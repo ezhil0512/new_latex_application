@@ -42,6 +42,7 @@ const state = {
     selectedFile: null,
     sessionId: null,
     latexCode: '',
+    latexBody: '',
     assets: [],
     status: 'idle', // 'idle' | 'processing' | 'ready'
     /** @type {AbortController|null} */
@@ -141,6 +142,7 @@ function handleFileSelection(file) {
     state.selectedFile = file;
     state.sessionId = null;
     state.latexCode = '';
+    state.latexBody = '';
     state.assets = [];
     state.status = 'idle';
 
@@ -188,6 +190,7 @@ function clearSelection() {
     state.selectedFile = null;
     state.sessionId = null;
     state.latexCode = '';
+    state.latexBody = '';
     state.assets = [];
     state.status = 'idle';
 
@@ -300,6 +303,8 @@ async function startLatexGeneration() {
         updateProcessingStatus('Retrieving preview files…');
 
         state.latexCode = previewResult.latex_preview || '';
+        // Preserve the full LaTeX document body for later MathJax rendering
+        state.latexBody = previewResult.latex_body || '';
         state.assets = previewResult.asset_names || [];
         state.status = 'ready';
 

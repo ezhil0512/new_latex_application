@@ -25,6 +25,11 @@ export async function uploadDocument(file, { signal } = {}) {
 
         const data = await response.json();
 
+        // Ensure `latex_body` exists on the returned object for downstream callers
+        if (typeof data.latex_body === 'undefined') {
+            data.latex_body = '';
+        }
+
         if (!response.ok) {
             return { error: data.error || `Server error (${response.status})` };
         }

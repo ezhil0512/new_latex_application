@@ -1,10 +1,11 @@
 """Concrete rule engine adapter for structured document normalization."""
 
 import logging
+import re
 import time
 from typing import Any
 
-from new_latex_app.domain.entities import DocumentRegion, DocumentStructure, RecognizedContent
+from new_latex_app.domain.entities import BoundingBox, DocumentRegion, DocumentStructure, RecognizedContent
 from new_latex_app.domain.enums import RegionType
 from new_latex_app.domain.exceptions import PipelineStageError
 
@@ -13,6 +14,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 class MetadataRuleEngine:
     """Normalize structure analyzer output for deterministic LaTeX generation."""
+
+    _OPTION_LABEL_PATTERN = re.compile(r"^\s*(?:\(([a-dA-D])\)|([a-dA-D])[\).])\s+(.+)$")
 
     _FIGURE_REGION_TYPES: frozenset[RegionType] = frozenset(
         {
@@ -31,34 +34,19 @@ class MetadataRuleEngine:
 
         self._validate_structure(structure)
 
-        # Consume reconstructed lines if present in content metadata
-        updated_contents = []
-        for content in structure.contents:
-            reconstructed_lines = content.metadata.get("reconstructed_lines")
-            if reconstructed_lines is not None:
-                reconstructed_text = "\n".join(
-                    line["text"] for line in reconstructed_lines if isinstance(line, dict) and "text" in line
-                )
-                content = RecognizedContent(
-                    region=content.region,
-                    latex=content.latex,
-                    text=reconstructed_text,
-                    asset_path=content.asset_path,
-                    metadata=content.metadata,
-                )
-            updated_contents.append(content)
+        updated_contents, updated_regions, index_map = self._normalize_contents(structure)
+        metadata = self._remap_question_references(structure.metadata, updated_contents, updated_regions, index_map)
 
         structure = DocumentStructure(
             title=structure.title,
             pages=structure.pages,
-            regions=structure.regions,
-            contents=tuple(updated_contents),
-            metadata=structure.metadata,
+            regions=updated_regions,
+            contents=updated_contents,
+            metadata=metadata,
         )
 
         questions = self._normalize_questions(structure)
 
-        metadata = dict(structure.metadata)
         metadata["rule_engine"] = "metadata_document_rule_engine"
         metadata["questions"] = questions
         metadata["question_count"] = len(questions)
@@ -71,6 +59,168 @@ class MetadataRuleEngine:
             contents=structure.contents,
             metadata=metadata,
         )
+
+    def _normalize_contents(
+        self,
+        structure: DocumentStructure,
+    ) -> tuple[tuple[RecognizedContent, ...], tuple[DocumentRegion, ...], dict[int, tuple[int, ...]]]:
+        """Return content normalized for rule construction without changing upstream stage contracts."""
+        contents: list[RecognizedContent] = []
+        regions: list[DocumentRegion] = list(structure.regions)
+        index_map: dict[int, tuple[int, ...]] = {}
+
+        for original_index, content in enumerate(structure.contents):
+            math_metadata = {
+                key: value
+                for key, value in content.metadata.items()
+                if any(token in key.lower() for token in ("math", "ocr", "latex", "formula"))
+            }
+            content = self._with_reconstructed_text(content)
+            expanded = self._expand_spatial_options(content)
+            mapped_indices: list[int] = []
+            for expanded_content in expanded:
+                if expanded_content.region not in regions:
+                    regions.append(expanded_content.region)
+                mapped_indices.append(len(contents))
+                contents.append(expanded_content)
+            index_map[original_index] = tuple(mapped_indices)
+
+        return tuple(contents), tuple(regions), index_map
+
+    def _with_reconstructed_text(self, content: RecognizedContent) -> RecognizedContent:
+        """Consume reconstructed lines if present in content metadata."""
+        reconstructed_lines = content.metadata.get("reconstructed_lines")
+        if reconstructed_lines is None:
+            return content
+
+        reconstructed_text = "\n".join(
+            line["text"] for line in reconstructed_lines if isinstance(line, dict) and "text" in line
+        )
+        return RecognizedContent(
+            region=content.region,
+            latex=content.latex,
+            text=reconstructed_text,
+            asset_path=content.asset_path,
+            metadata=content.metadata,
+        )
+
+    def _expand_spatial_options(self, content: RecognizedContent) -> tuple[RecognizedContent, ...]:
+        """Expand option-like spatial blocks into existing option content shape."""
+        if content.region.region_type is not RegionType.TEXT:
+            return (content,)
+
+        spatial_blocks = content.metadata.get("spatial_blocks")
+        if not isinstance(spatial_blocks, list):
+            return (content,)
+
+        option_blocks: list[tuple[dict[str, Any], str, str]] = []
+        paragraph_parts: list[str] = []
+
+        for block in spatial_blocks:
+            if not isinstance(block, dict) or not isinstance(block.get("text"), str):
+                continue
+            block_text = block["text"].strip()
+            option_match = self._OPTION_LABEL_PATTERN.match(block_text)
+            if option_match:
+                option_matches = list(
+                    re.finditer(r"(?:^|\s)(?:\(([a-dA-D])\)|([a-dA-D])[\).])\s+", block_text)
+                )
+                if len(option_matches) > 1:
+                    for index, split_match in enumerate(option_matches):
+                        label = (split_match.group(1) or split_match.group(2) or "").lower()
+                        next_match = option_matches[index + 1] if index + 1 < len(option_matches) else None
+                        option_text = block_text[split_match.end() : next_match.start() if next_match else None].strip()
+                        if option_text:
+                            option_blocks.append((block, label, option_text))
+                else:
+                    label = (option_match.group(1) or option_match.group(2) or "").lower()
+                    option_text = option_match.group(3).strip()
+                    option_blocks.append((block, label, option_text))
+            elif block_text:
+                paragraph_parts.append(block_text)
+
+        if len(option_blocks) < 2:
+            return (content,)
+
+        expanded: list[RecognizedContent] = []
+        paragraph_text = "\n".join(paragraph_parts).strip()
+        if paragraph_text:
+            expanded.append(
+                RecognizedContent(
+                    region=content.region,
+                    latex=content.latex,
+                    text=paragraph_text,
+                    asset_path=content.asset_path,
+                    metadata=content.metadata,
+                )
+            )
+
+        for block, label, option_text in option_blocks:
+            region = self._option_region(content.region, block, label)
+            metadata = dict(content.metadata)
+            metadata["option_label"] = label
+            metadata["source_spatial_block"] = block
+            expanded.append(
+                RecognizedContent(
+                    region=region,
+                    latex=None,
+                    text=option_text,
+                    asset_path=None,
+                    metadata=metadata,
+                )
+            )
+
+        return tuple(expanded)
+
+    def _option_region(self, source_region: DocumentRegion, block: dict[str, Any], label: str) -> DocumentRegion:
+        bbox = self._block_bbox(block) or source_region.bbox
+        metadata = dict(source_region.metadata)
+        metadata["option_label"] = label
+        metadata["source_region_type"] = source_region.region_type.value
+        return DocumentRegion(
+            page_number=source_region.page_number,
+            region_type=RegionType.OPTION,
+            bbox=bbox,
+            confidence=source_region.confidence,
+            metadata=metadata,
+        )
+
+    def _block_bbox(self, block: dict[str, Any]) -> BoundingBox | None:
+        bbox = block.get("bbox")
+        if not isinstance(bbox, (list, tuple)) or len(bbox) != 4:
+            return None
+        if not all(isinstance(point, (list, tuple)) and len(point) >= 2 for point in bbox):
+            return None
+        try:
+            xs = [float(point[0]) for point in bbox]
+            ys = [float(point[1]) for point in bbox]
+        except (TypeError, ValueError):
+            return None
+        return BoundingBox(x=min(xs), y=min(ys), width=max(xs) - min(xs), height=max(ys) - min(ys))
+
+    def _remap_question_references(
+        self,
+        metadata: dict[str, Any],
+        contents: tuple[RecognizedContent, ...],
+        regions: tuple[DocumentRegion, ...],
+        index_map: dict[int, tuple[int, ...]],
+    ) -> dict[str, Any]:
+        remapped_metadata = dict(metadata)
+        remapped_questions = []
+        for question in tuple(metadata["questions"]):
+            remapped_question = dict(question)
+            content_indices = tuple(
+                mapped_index
+                for original_index in question["content_indices"]
+                for mapped_index in index_map[int(original_index)]
+            )
+            remapped_question["content_indices"] = content_indices
+            remapped_question["region_indices"] = tuple(
+                self._region_index(regions, contents[index].region) for index in content_indices
+            )
+            remapped_questions.append(remapped_question)
+        remapped_metadata["questions"] = tuple(remapped_questions)
+        return remapped_metadata
 
     def _validate_structure(self, structure: DocumentStructure) -> None:
         """Validate the incoming structure before rule enrichment."""

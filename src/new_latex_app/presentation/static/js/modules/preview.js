@@ -309,3 +309,35 @@ export function renderStructurePreview(latex, structureElement) {
         structureElement.innerHTML = '<span class="placeholder-text">Simple document structure parsed. No headers found.</span>';
     }
 }
+
+/**
+ * Render LaTeX body into the math preview container using MathJax when available.
+ * - Inserts the raw `latexBody` as text into `#mathjax-preview-container`.
+ * - Calls `MathJax.typesetPromise([container])` if MathJax is present.
+ * - If MathJax is not present, the raw text remains visible.
+ * @param {string} latexBody
+ */
+export function renderMathJaxPreview(latexBody) {
+    const container = document.getElementById('mathjax-preview-container');
+    if (!container) return;
+
+    // Clear previous contents
+    container.innerHTML = '';
+
+    // Insert body as text to avoid HTML injection; MathJax will scan text nodes
+    const textHolder = document.createElement('div');
+    textHolder.textContent = latexBody || '';
+    container.appendChild(textHolder);
+
+    // If MathJax is available and provides typesetPromise, typeset this container
+    try {
+        if (typeof MathJax !== 'undefined' && MathJax && typeof MathJax.typesetPromise === 'function') {
+            // typesetPromise returns a Promise; callers may await if they later invoke this function
+            MathJax.typesetPromise([container]).catch(() => {
+                // Swallow errors to avoid breaking the UI; keep raw content visible
+            });
+        }
+    } catch (_e) {
+        // If any unexpected error, leave the raw content in place
+    }
+}

@@ -191,6 +191,23 @@ def create_app(container: Container | None = None) -> Flask:
             except Exception as e:
                 logger.warning(f"Failed to read LaTeX preview: {e}")
 
+            # Extract LaTeX document body (between \begin{document} and \end{document}).
+            # Use a local regex import to keep changes scoped to this function.
+            try:
+                import re
+
+                begin_match = re.search(r"\\begin\s*\{\s*document\s*\}", content, re.IGNORECASE)
+                end_match = re.search(r"\\end\s*\{\s*document\s*\}", content, re.IGNORECASE)
+                if begin_match and end_match and begin_match.end() < end_match.start():
+                    latex_body = content[begin_match.end(): end_match.start()].strip()
+                else:
+                    # Fallback to full content if markers not found or malformed
+                    latex_body = content
+            except Exception:
+                latex_body = content
+
+            preview_data["latex_body"] = latex_body
+
         assets_dir = export_path / "assets"
         if assets_dir.exists():
             asset_files = list(assets_dir.iterdir())
